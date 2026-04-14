@@ -102,9 +102,9 @@ export class GameEngine {
     executeTurn() {
         const state = this.state;
 
-        // 1. Check slots are filled
-        if (state.schedule.length < state.scheduleSlots) {
-            this.ui.showToast(`请选择 ${state.scheduleSlots} 个行程！`);
+        // 1. Check at least 1 action selected
+        if (state.schedule.length === 0) {
+            this.ui.showToast('请至少选择 1 个行程！');
             return false;
         }
 
