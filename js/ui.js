@@ -19,6 +19,19 @@ export class UI {
         this.screens[screenName].classList.add('active');
     }
 
+    // 初始化公司规模卡片点击逻辑
+    initScaleCards() {
+        const cards = document.querySelectorAll('.scale-card');
+        const select = document.getElementById('company-scale-select');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                cards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                if (select) select.value = card.dataset.scale;
+            });
+        });
+    }
+
     // 绑定开始按钮事件
     bindStartButton(onStartCallback) {
         document.getElementById('start-form').addEventListener('submit', (e) => {

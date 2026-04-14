@@ -9,63 +9,153 @@
 <body>
     <div id="app">
         <div id="start-screen" class="screen active">
-            <h1>燃烧吧！制作人</h1>
-            <form id="start-form">
-                <div class="form-group">
-                    <label for="group-name-input">为你的偶像团体命名：</label>
-                    <input type="text" id="group-name-input" placeholder="输入团名...">
+            <div class="start-hero">
+                <div class="start-hero-content">
+                    <div class="start-logo">🔥</div>
+                    <h1 class="start-title">燃烧吧！制作人</h1>
+                    <p class="start-subtitle">3 年，156 周，打造一个传奇</p>
                 </div>
-                <div class="form-group">
-                    <label for="company-scale-select">选择你的公司规模：</label>
-                    <select id="company-scale-select">
-                        <option value="indie">独立厂牌 (初始资金小，团员感情好)</option>
-                        <option value="mid">中型企划 (均衡发展)</option>
-                        <option value="major">娱乐巨头 (初始资金大，易发危机)</option>
-                        <option value="revival">过气重组 (粉丝基础在，但资金紧缺)</option>
-                    </select>
-                </div>
-                <button type="submit" id="start-btn" class="btn-primary">正式出道</button>
-            </form>
+            </div>
+            <div class="start-form-container">
+                <form id="start-form">
+                    <div class="form-group">
+                        <label for="group-name-input">为你的偶像团体命名</label>
+                        <input type="text" id="group-name-input" placeholder="输入团名…（试试输入热门团体名）">
+                    </div>
+                    <div class="form-group">
+                        <label>选择公司规模</label>
+                        <div class="scale-cards" id="scale-cards">
+                            <div class="scale-card selected" data-scale="indie">
+                                <div class="scale-card-name">🏠 独立厂牌</div>
+                                <div class="scale-card-stats">
+                                    <span>💰 100万</span><span>👥 0粉丝</span>
+                                </div>
+                                <p class="scale-card-desc">小而美，团员情谊深厚。穷，但自由。</p>
+                                <div class="scale-card-tags">
+                                    <span class="tag tag-green">关系好</span>
+                                    <span class="tag tag-green">压力慢</span>
+                                    <span class="tag tag-red">资金少</span>
+                                </div>
+                            </div>
+                            <div class="scale-card" data-scale="mid">
+                                <div class="scale-card-name">🏢 中型企划</div>
+                                <div class="scale-card-stats">
+                                    <span>💰 500万</span><span>👥 5万粉丝</span>
+                                </div>
+                                <p class="scale-card-desc">各方面均衡，稳扎稳打的标准选择。</p>
+                                <div class="scale-card-tags">
+                                    <span class="tag tag-gray">均衡发展</span>
+                                </div>
+                            </div>
+                            <div class="scale-card" data-scale="major">
+                                <div class="scale-card-name">🏛️ 娱乐巨头</div>
+                                <div class="scale-card-stats">
+                                    <span>💰 2000万</span><span>👥 50万粉丝</span>
+                                </div>
+                                <p class="scale-card-desc">财大气粗，但危机四伏，全网盯着你。</p>
+                                <div class="scale-card-tags">
+                                    <span class="tag tag-green">资金充裕</span>
+                                    <span class="tag tag-red">危机频发</span>
+                                    <span class="tag tag-red">关系差</span>
+                                </div>
+                            </div>
+                            <div class="scale-card" data-scale="revival">
+                                <div class="scale-card-name">⚡ 过气重组</div>
+                                <div class="scale-card-stats">
+                                    <span>💰 50万</span><span>👥 10万粉丝</span>
+                                </div>
+                                <p class="scale-card-desc">背水一战，高能力但掉粉惩罚加倍。</p>
+                                <div class="scale-card-tags">
+                                    <span class="tag tag-green">属性高</span>
+                                    <span class="tag tag-red">资金极少</span>
+                                    <span class="tag tag-orange">掉粉×2</span>
+                                </div>
+                            </div>
+                        </div>
+                        <select id="company-scale-select" style="display:none;">
+                            <option value="indie">独立厂牌</option>
+                            <option value="mid">中型企划</option>
+                            <option value="major">娱乐巨头</option>
+                            <option value="revival">过气重组</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="start-btn" class="btn-start">🎤 正式出道</button>
+                </form>
+            </div>
         </div>
         <div id="game-screen" class="screen">
             <div class="top-bar">
-                <h2><span id="ui-group-name"></span></h2>
+                <div class="top-bar-name">
+                    <span class="top-bar-icon">🎤</span>
+                    <span id="ui-group-name"></span>
+                </div>
                 <div class="stats">
-                    <div>第 <span id="ui-turn">1</span>/156 周</div>
-                    <div>资金: ¥<span id="ui-money">0</span></div>
-                    <div>粉丝: <span id="ui-fans">0</span></div>
+                    <div class="stat-pill">
+                        <span class="stat-label">第</span>
+                        <span class="stat-value" id="ui-turn">1</span>
+                        <span class="stat-label">/ 156 周</span>
+                    </div>
+                    <div class="stat-pill stat-money">
+                        <span class="stat-label">💰</span>
+                        <span class="stat-value">¥<span id="ui-money">0</span></span>
+                    </div>
+                    <div class="stat-pill stat-fans">
+                        <span class="stat-label">⭐</span>
+                        <span class="stat-value"><span id="ui-fans">0</span> 粉丝</span>
+                    </div>
                 </div>
             </div>
-            
+
             <div class="main-content">
                 <div class="side-panel">
-                    <h3>团队状态</h3>
-                    <div class="bar-group">
-                        <label for="bar-stamina">体力:</label>
-                        <progress id="bar-stamina" max="100" value="100"></progress>
-                        <span id="text-stamina">100</span>
+                    <div class="panel-section">
+                        <h3 class="panel-title">团队状态</h3>
+                        <div class="bar-group">
+                            <label for="bar-stamina">体力</label>
+                            <div class="bar-wrap">
+                                <progress id="bar-stamina" max="100" value="100"></progress>
+                            </div>
+                            <span id="text-stamina" class="bar-val">100</span>
+                        </div>
+                        <div class="bar-group">
+                            <label for="bar-stress">压力</label>
+                            <div class="bar-wrap">
+                                <progress id="bar-stress" max="100" value="0"></progress>
+                            </div>
+                            <span id="text-stress" class="bar-val">0</span>
+                        </div>
+                        <div class="bar-group">
+                            <label for="bar-bond">默契</label>
+                            <div class="bar-wrap">
+                                <progress id="bar-bond" max="100" value="50"></progress>
+                            </div>
+                            <span id="text-bond" class="bar-val">50</span>
+                        </div>
                     </div>
-                    <div class="bar-group">
-                        <label for="bar-stress">压力:</label>
-                        <progress id="bar-stress" max="100" value="0"></progress>
-                        <span id="text-stress">0</span>
+                    <div class="panel-section">
+                        <h3 class="panel-title">专业属性</h3>
+                        <div class="attr-row">
+                            <span class="attr-icon">🎵</span>
+                            <span class="attr-name">唱功</span>
+                            <span class="attr-val" id="text-vocal">10</span>
+                        </div>
+                        <div class="attr-row">
+                            <span class="attr-icon">💃</span>
+                            <span class="attr-name">舞蹈</span>
+                            <span class="attr-val" id="text-dance">10</span>
+                        </div>
+                        <div class="attr-row">
+                            <span class="attr-icon">✨</span>
+                            <span class="attr-name">魅力</span>
+                            <span class="attr-val" id="text-charm">10</span>
+                        </div>
                     </div>
-                    <div class="bar-group">
-                        <label for="bar-bond">团员关系:</label>
-                        <progress id="bar-bond" max="100" value="50"></progress>
-                        <span id="text-bond">50</span>
-                    </div>
-                    
-                    <h3>专业属性</h3>
-                    <div>Vocal: <span id="text-vocal">10</span></div>
-                    <div>Dance: <span id="text-dance">10</span></div>
-                    <div>Charm: <span id="text-charm">10</span></div>
                 </div>
-                
+
                 <div class="schedule-area">
-                    <h3>本周行程安排</h3>
+                    <h3 class="panel-title">📅 本周行程安排</h3>
                     <div id="schedule-slots"></div>
-                    <button id="execute-btn" class="btn-primary">执行本周计划</button>
+                    <button id="execute-btn" class="btn-primary btn-execute">▶ 执行本周计划</button>
                 </div>
             </div>
         </div>

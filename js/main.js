@@ -17,6 +17,7 @@ function startGame(name, scale) {
     }
 }
 
+ui.initScaleCards();
 ui.bindStartButton(startGame);
 
 ui.initScheduleUI((index, actionKey) => {
