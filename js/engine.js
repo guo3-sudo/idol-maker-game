@@ -48,10 +48,10 @@ export class GameEngine {
             if (action.type === 'gig') {
                 // Income formula: base + fans * 0.1 * successRate (capped at 1.0)
                 const successRate = Math.min(1.0, (state.vocal + state.dance + state.charm) / 300);
-                const income = action.incomeBase + state.fans * 0.1 * successRate;
-                const newFans = action.fansBase * successRate;
+                const income = (action.incomeBase || 0) + state.fans * 0.1 * successRate;
+                const newFans = (action.fansBase || 0) * successRate;
                 state.modifyResource('money', income);
-                state.modifyResource('fans', newFans);
+                state.modifyResource('fans', Math.round(newFans));
             }
         }
 
@@ -59,6 +59,8 @@ export class GameEngine {
         // (stressRate is stored in state, applied as post-turn modifier)
         // We already applied raw stress increments; scale acts as a weekly passive multiplier
         // Apply: stress += (stress * (stressRate - 1)) to simulate company-scale pressure
+        // passiveStress is negative for low-stressRate companies (e.g. indie: 0.8),
+        // providing a gentle weekly stress relief — intentional design.
         const passiveStress = state.stress * (state.stressRate - 1) * 0.1;
         state.modifyResource('stress', passiveStress);
 
@@ -67,7 +69,7 @@ export class GameEngine {
             const penalty = 50000 + state.fans * 0.05;
             state.modifyResource('fans', -penalty);
             state.modifyResource('money', -200000);
-            state.stress = 80; // knock back down after crisis
+            state.modifyResource('stress', 80 - state.stress); // knock back down after crisis
             alert('⚠️ 团队压力爆表！成员集体罢工，损失惨重！');
         }
 
@@ -76,12 +78,14 @@ export class GameEngine {
 
         // 7. Check bankruptcy
         if (state.money < 0) {
+            // Note: schedule not reset here; state.initGame().reset() handles this on restart
             this._triggerGameOver('破产清算：公司资金耗尽，团体被迫解散。');
             return 'gameover';
         }
 
         // 8. Check fan collapse (塌房)
         if (state.fans <= 0 && state.turn > 5) {
+            // Note: schedule not reset here; state.initGame().reset() handles this on restart
             this._triggerGameOver('全网封杀：粉丝归零，团体彻底凉凉。');
             return 'gameover';
         }
