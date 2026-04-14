@@ -8,23 +8,24 @@
 </head>
 <body>
     <div id="app">
-        <!-- 后续 UI 容器 -->
         <div id="start-screen" class="screen active">
             <h1>燃烧吧！制作人</h1>
-            <div class="form-group">
-                <label>为你的偶像团体命名：</label>
-                <input type="text" id="group-name-input" placeholder="输入团名...">
-            </div>
-            <div class="form-group">
-                <label>选择你的公司规模：</label>
-                <select id="company-scale-select">
-                    <option value="indie">独立厂牌 (初始资金小，团员感情好)</option>
-                    <option value="mid">中型企划 (均衡发展)</option>
-                    <option value="major">娱乐巨头 (初始资金大，易发危机)</option>
-                    <option value="revival">过气重组 (粉丝基础在，但资金紧缺)</option>
-                </select>
-            </div>
-            <button id="start-btn">正式出道</button>
+            <form id="start-form">
+                <div class="form-group">
+                    <label for="group-name-input">为你的偶像团体命名：</label>
+                    <input type="text" id="group-name-input" placeholder="输入团名...">
+                </div>
+                <div class="form-group">
+                    <label for="company-scale-select">选择你的公司规模：</label>
+                    <select id="company-scale-select">
+                        <option value="indie">独立厂牌 (初始资金小，团员感情好)</option>
+                        <option value="mid">中型企划 (均衡发展)</option>
+                        <option value="major">娱乐巨头 (初始资金大，易发危机)</option>
+                        <option value="revival">过气重组 (粉丝基础在，但资金紧缺)</option>
+                    </select>
+                </div>
+                <button type="submit" id="start-btn" class="btn-primary">正式出道</button>
+            </form>
         </div>
         <div id="game-screen"></div>
     </div>
