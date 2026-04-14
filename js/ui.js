@@ -25,4 +25,23 @@ export class UI {
             onStartCallback(name, scale);
         });
     }
+
+    renderState(state) {
+        document.getElementById('ui-group-name').textContent = state.groupName;
+        document.getElementById('ui-turn').textContent = state.turn;
+        document.getElementById('ui-money').textContent = state.money.toLocaleString();
+        document.getElementById('ui-fans').textContent = state.fans.toLocaleString();
+
+        const updateBar = (id, val) => {
+            document.getElementById(`bar-${id}`).value = val;
+            document.getElementById(`text-${id}`).textContent = Math.round(val);
+        };
+        updateBar('stamina', state.stamina);
+        updateBar('stress', state.stress);
+        updateBar('bond', state.bond);
+
+        document.getElementById('text-vocal').textContent = Math.round(state.vocal);
+        document.getElementById('text-dance').textContent = Math.round(state.dance);
+        document.getElementById('text-charm').textContent = Math.round(state.charm);
+    }
 }

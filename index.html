@@ -27,7 +27,48 @@
                 <button type="submit" id="start-btn" class="btn-primary">正式出道</button>
             </form>
         </div>
-        <div id="game-screen"></div>
+        <div id="game-screen" class="screen">
+            <div class="top-bar">
+                <h2><span id="ui-group-name"></span></h2>
+                <div class="stats">
+                    <div>第 <span id="ui-turn">1</span>/156 周</div>
+                    <div>资金: ¥<span id="ui-money">0</span></div>
+                    <div>粉丝: <span id="ui-fans">0</span></div>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div class="side-panel">
+                    <h3>团队状态</h3>
+                    <div class="bar-group">
+                        <label>体力:</label>
+                        <progress id="bar-stamina" max="100" value="100"></progress>
+                        <span id="text-stamina">100</span>
+                    </div>
+                    <div class="bar-group">
+                        <label>压力:</label>
+                        <progress id="bar-stress" max="100" value="0"></progress>
+                        <span id="text-stress">0</span>
+                    </div>
+                    <div class="bar-group">
+                        <label>团员关系:</label>
+                        <progress id="bar-bond" max="100" value="50"></progress>
+                        <span id="text-bond">50</span>
+                    </div>
+                    
+                    <h3>专业属性</h3>
+                    <div>Vocal: <span id="text-vocal">10</span></div>
+                    <div>Dance: <span id="text-dance">10</span></div>
+                    <div>Charm: <span id="text-charm">10</span></div>
+                </div>
+                
+                <div class="schedule-area">
+                    <h3>本周行程安排</h3>
+                    <div id="schedule-slots"></div>
+                    <button id="execute-btn" class="btn-primary" style="margin-top: 20px;">执行本周计划</button>
+                </div>
+            </div>
+        </div>
     </div>
     <script type="module" src="js/main.js"></script>
 </body>
