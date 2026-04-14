@@ -29,6 +29,8 @@ export class GameState {
 
         // Schedule (5 slots per turn)
         this.schedule = new Array(SCHEDULE_SLOTS).fill(null);
+
+        this._easterEggTriggered = false;
     }
 
     initGame(groupName, scaleKey) {
@@ -41,7 +43,25 @@ export class GameState {
         this.fans = scale.fans;
         this.bond = scale.bond;
         this.stressRate = scale.stressRate;
-        // 彩蛋逻辑：如果团名包含特定关键词，给予加成。暂时省略，后续完善。
+        // 彩蛋：团名包含热门偶像团体关键词时给予初始加成
+        const EASTER_EGG_KEYWORDS = [
+            '时代少年团', 'TNT', 'BLACKPINK', 'blackpink', 'Black Pink',
+            'NCT', 'EXO', 'exo', 'BTS', 'bts', '防弹', 'TWICE', 'Twice', 'twice',
+            'NEWJEANS', 'NewJeans', 'newjeans', 'AESPA', 'aespa', 'Aespa',
+            'XG', '(G)I-DLE', 'IDLE', 'ITZY', 'itzy', 'STRAY KIDS', 'Stray Kids',
+            'SEVENTEEN', 'Seventeen', 'TXT', 'ENHYPEN', 'enhypen',
+            '火箭少女', 'SNH48', 'AKB', 'NMB', 'SKE',
+            'TFBOYS', 'tfboys', '王俊凯', '王源', '易烊千玺',
+        ];
+        const upperName = groupName.toUpperCase();
+        const hasEasterEgg = EASTER_EGG_KEYWORDS.some(kw => upperName.includes(kw.toUpperCase()));
+        if (hasEasterEgg) {
+            this.fans += 200000;       // 初始粉丝 +20万
+            this.charm += 5;           // 魅力加成
+            this._easterEggTriggered = true;
+        } else {
+            this._easterEggTriggered = false;
+        }
     }
 
     // 基础的数值修改方法，带有边界限制

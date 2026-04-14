@@ -128,4 +128,13 @@ export class UI {
         const overlay = document.getElementById('modal-overlay');
         if (overlay) overlay.style.display = 'none';
     }
+
+    showEasterEggNotice() {
+        // Show a temporary banner at the top of the game screen
+        const banner = document.createElement('div');
+        banner.className = 'easter-egg-banner';
+        banner.textContent = '✨ 好名字！系统感应到强大的星势，初始粉丝 +20万，魅力 +5！';
+        document.getElementById('game-screen').prepend(banner);
+        setTimeout(() => banner.remove(), 4000);
+    }
 }

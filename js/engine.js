@@ -49,7 +49,7 @@ export class GameEngine {
             if (action.type === 'gig') {
                 // Income formula: base + fans * 0.1 * successRate (capped at 1.0)
                 const successRate = Math.min(1.0, (state.vocal + state.dance + state.charm) / 300);
-                const income = (action.incomeBase || 0) + state.fans * 0.1 * successRate;
+                const income = Math.round((action.incomeBase || 0) + state.fans * 0.1 * successRate);
                 const newFans = (action.fansBase || 0) * successRate;
                 state.modifyResource('money', income);
                 state.modifyResource('fans', Math.round(newFans));
@@ -67,7 +67,7 @@ export class GameEngine {
 
         // 5. Stress overflow: if stress >= 100, penalize
         if (state.stress >= 100) {
-            const penalty = 50000 + state.fans * 0.05;
+            const penalty = Math.round(50000 + state.fans * 0.05);
             state.modifyResource('fans', -penalty);
             state.modifyResource('money', -200000);
             state.modifyResource('stress', 80 - state.stress); // knock back down after crisis
@@ -129,7 +129,6 @@ export class GameEngine {
 
     _triggerGameOver(message) {
         alert(`游戏结束！\n${message}`);
-        // TODO (Task 6): hook into event overlay if needed
     }
 
     _triggerFinalEnding() {

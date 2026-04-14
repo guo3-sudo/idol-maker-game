@@ -12,6 +12,9 @@ function startGame(name, scale) {
     ui.showScreen('game');
     ui.renderState(state);
     ui.resetScheduleUI();
+    if (state._easterEggTriggered) {
+        ui.showEasterEggNotice();
+    }
 }
 
 ui.bindStartButton(startGame);
