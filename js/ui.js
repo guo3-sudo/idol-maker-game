@@ -87,7 +87,7 @@ export class UI {
             const div = document.createElement('div');
             div.className = 'slot-item';
             div.innerHTML = `
-                <label for="slot-select-${i}">第${i + 1}天：</label>
+                <label for="slot-select-${i}">行程 ${i + 1}</label>
                 <select id="slot-select-${i}" class="slot-select" data-index="${i}">
                     ${optionsHtml}
                 </select>
@@ -140,6 +140,73 @@ export class UI {
     hideEventModal() {
         const overlay = document.getElementById('modal-overlay');
         if (overlay) overlay.style.display = 'none';
+    }
+
+    showMonthSummary(data) {
+        const overlay   = document.getElementById('modal-overlay');
+        const titleEl   = document.getElementById('modal-title');
+        const descEl    = document.getElementById('modal-desc');
+        const optionsEl = document.getElementById('modal-options');
+        if (!overlay || !titleEl || !descEl || !optionsEl) return;
+
+        titleEl.textContent = `第 ${data.month} 月 · 月度小结`;
+
+        const fmt = (n) => Math.round(n).toLocaleString();
+        const delta = (before, after) => {
+            const d = Math.round(after - before);
+            if (d > 0) return `<span class="delta-pos">+${d.toLocaleString()}</span>`;
+            if (d < 0) return `<span class="delta-neg">${d.toLocaleString()}</span>`;
+            return `<span class="delta-zero">—</span>`;
+        };
+
+        descEl.innerHTML = `
+            <div class="summary-rows">
+                <div class="summary-row">
+                    <span>💰 资金</span>
+                    <span class="summary-now">¥${fmt(data.money.after)}</span>
+                    ${delta(data.money.before, data.money.after)}
+                </div>
+                <div class="summary-row">
+                    <span>👥 粉丝</span>
+                    <span class="summary-now">${fmt(data.fans.after)}</span>
+                    ${delta(data.fans.before, data.fans.after)}
+                </div>
+                <div class="summary-row">
+                    <span>🎤 唱功</span>
+                    <span class="summary-now">${fmt(data.vocal.after)}</span>
+                    ${delta(data.vocal.before, data.vocal.after)}
+                </div>
+                <div class="summary-row">
+                    <span>💃 舞蹈</span>
+                    <span class="summary-now">${fmt(data.dance.after)}</span>
+                    ${delta(data.dance.before, data.dance.after)}
+                </div>
+                <div class="summary-row">
+                    <span>✨ 魅力</span>
+                    <span class="summary-now">${fmt(data.charm.after)}</span>
+                    ${delta(data.charm.before, data.charm.after)}
+                </div>
+                <div class="summary-row">
+                    <span>🤝 默契</span>
+                    <span class="summary-now">${fmt(data.bond.after)}</span>
+                    ${delta(data.bond.before, data.bond.after)}
+                </div>
+                <div class="summary-row">
+                    <span>😰 压力</span>
+                    <span class="summary-now">${fmt(data.stress.after)}</span>
+                    ${delta(data.stress.before, data.stress.after)}
+                </div>
+            </div>
+        `;
+
+        optionsEl.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.className = 'modal-btn modal-btn--continue';
+        btn.textContent = '继续出发 →';
+        btn.addEventListener('click', () => this.hideEventModal());
+        optionsEl.appendChild(btn);
+
+        overlay.style.display = 'flex';
     }
 
     showEndOverlay(emoji, title, message, stats) {

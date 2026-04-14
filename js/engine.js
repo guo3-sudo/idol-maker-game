@@ -14,17 +14,22 @@ export class GameEngine {
 
         // 1. Check all slots are filled
         if (state.schedule.includes(null)) {
-            alert('请为每天都安排行程！');
+            alert('请为每个行程槽都安排行程！');
             return false;
         }
 
-        // 2. Check stamina is sufficient
-        if (state.stamina < 30) {
-            alert('体力太低无法行动，请安排休息！');
-            return false;
-        }
+        // 2. Snapshot current values for monthly summary
+        const snapshot = {
+            fans:   state.fans,
+            money:  state.money,
+            vocal:  state.vocal,
+            dance:  state.dance,
+            charm:  state.charm,
+            bond:   state.bond,
+            stress: state.stress,
+        };
 
-        // 3. Execute each of the 5 actions
+        // 3. Execute each action
         for (const actionKey of state.schedule) {
             const action = ACTIONS[actionKey];
             if (!action) continue; // guard against invalid keys
@@ -97,10 +102,31 @@ export class GameEngine {
             return 'ending';
         }
 
-        // 10. Trigger random event
-        const bondFactor = (100 - this.state.bond) / 100;
+        // 10. Determine if this turn ends a month (every 4 turns)
+        const isMonthEnd = state.turn > 1 && (state.turn - 1) % 4 === 0;
+        const monthNum   = Math.ceil((state.turn - 1) / 4);
+
+        // 11. Trigger random event
+        const bondFactor   = (100 - this.state.bond) / 100;
         const stressFactor = this.state.stress / 100;
-        const eventChance = 0.15 + bondFactor * 0.15 + stressFactor * 0.15;
+        const eventChance  = Math.min(0.75, 0.35 + bondFactor * 0.20 + stressFactor * 0.20);
+
+        // afterEvent: called after event (or directly if no event)
+        const afterEvent = () => {
+            this.ui.renderState(this.state);
+            if (isMonthEnd) {
+                this.ui.showMonthSummary({
+                    month:  monthNum,
+                    fans:   { before: snapshot.fans,   after: state.fans   },
+                    money:  { before: snapshot.money,  after: state.money  },
+                    vocal:  { before: snapshot.vocal,  after: state.vocal  },
+                    dance:  { before: snapshot.dance,  after: state.dance  },
+                    charm:  { before: snapshot.charm,  after: state.charm  },
+                    bond:   { before: snapshot.bond,   after: state.bond   },
+                    stress: { before: snapshot.stress, after: state.stress },
+                });
+            }
+        };
 
         if (Math.random() < eventChance) {
             const randomEvent = EVENT_POOL[Math.floor(Math.random() * EVENT_POOL.length)];
@@ -117,8 +143,10 @@ export class GameEngine {
                         alert(`📋 公关结果：\n${result.msg}`);
                     }
                 }
-                this.ui.renderState(this.state);
+                afterEvent();
             });
+        } else {
+            afterEvent();
         }
 
         // 11. Reset schedule for next turn

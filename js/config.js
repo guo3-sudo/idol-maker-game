@@ -8,4 +8,4 @@ export const COMPANY_SCALES = {
 
 export const MAX_TURN = 156; // 3 years * 52 weeks
 
-export const SCHEDULE_SLOTS = 5;
+export const SCHEDULE_SLOTS = 3;

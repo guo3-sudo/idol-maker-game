@@ -567,6 +567,54 @@ progress::-moz-progress-bar { background: #2ed573; border-radius: 4px; }
 
 .modal-btn:hover { border-color: #ff4757; background: #fff5f6; }
 
+/* Month Summary inside modal */
+.summary-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid #f1f2f6;
+    font-size: 14px;
+    gap: 8px;
+}
+
+.summary-row:last-child { border-bottom: none; }
+
+.summary-row > span:first-child {
+    flex: 1;
+    color: #57606f;
+}
+
+.summary-now {
+    font-weight: 700;
+    color: #2f3542;
+    min-width: 60px;
+    text-align: right;
+}
+
+.delta-pos  { color: #2ecc71; font-weight: 700; min-width: 52px; text-align: right; }
+.delta-neg  { color: #ff4757; font-weight: 700; min-width: 52px; text-align: right; }
+.delta-zero { color: #aaa;    font-weight: 400; min-width: 52px; text-align: right; }
+
+.modal-btn--continue {
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+    color: #fff;
+    border-color: transparent;
+    text-align: center;
+    font-size: 15px;
+}
+
+.modal-btn--continue:hover {
+    background: linear-gradient(135deg, #b2a8fe, #7d6cf7);
+    border-color: transparent;
+}
+
 /* ============================================================
    EASTER EGG BANNER
    ============================================================ */
