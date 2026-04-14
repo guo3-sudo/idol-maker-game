@@ -128,25 +128,48 @@ export class GameEngine {
     }
 
     _triggerGameOver(message) {
-        alert(`游戏结束！\n${message}`);
+        this.ui.showEndOverlay(
+            '💀',
+            '游戏结束',
+            message,
+            [
+                { label: '坚持了', value: `第 ${this.state.turn} 周` },
+                { label: '最终粉丝', value: Math.round(this.state.fans).toLocaleString() },
+                { label: '剩余资金', value: `¥${Math.round(this.state.money).toLocaleString()}` }
+            ]
+        );
     }
 
     _triggerFinalEnding() {
-        const { fans, bond } = this.state;
-        let ending;
+        const { fans, bond, turn } = this.state;
+        let emoji, title, message;
+
         if (fans < 100000) {
-            ending = '【结局 D】无人问津的毕业（糊咖）\n三年期满未能续约，成员们黯然退圈。';
+            emoji   = '😔';
+            title   = '【结局 D】无人问津的毕业';
+            message = '三年期满未能续约，成员们黯然退圈，转型素人……下次一定能行的。';
         } else if (fans < 1000000) {
-            ending = '【结局 C】娱乐圈的生存之道（二线团体）\n靠接小商演和直播带货维持生计。';
+            emoji   = '🌟';
+            title   = '【结局 C】娱乐圈的生存之道';
+            message = '成为娱乐圈的二线团体，靠接小商演和直播带货维持生计，也算一种成功。';
         } else if (fans < 5000000) {
-            ending = '【结局 B】当红炸子鸡（顶流）\n拿下年度最佳组合奖，举办全国巡演！';
+            emoji   = '🔥';
+            title   = '【结局 B】当红炸子鸡';
+            message = '拿下年度最佳组合奖，举办全国巡演，成员们星途璀璨！';
+        } else if (bond > 80) {
+            emoji   = '👑';
+            title   = '【结局 A · 真结局】国民天团（传奇）';
+            message = '火爆全球，举办世界巡演，全员保持初心、关系融洽。你打造了一个娱乐圈永远无法复制的神话！';
         } else {
-            if (bond > 80) {
-                ending = '【结局 A / 真结局】国民天团（传奇）\n火爆全球，全员保持初心，打造了娱乐圈神话！';
-            } else {
-                ending = '【结局 B+】当红炸子鸡（貌合神离）\n人气很火，但团内关系已名存实亡。';
-            }
+            emoji   = '💫';
+            title   = '【结局 B+】当红炸子鸡（貌合神离）';
+            message = '团体大红大紫，但背地里矛盾重重，团内关系已名存实亡……独缺那一份初心。';
         }
-        alert(`三年合约期满！\n\n最终粉丝数：${Math.round(fans).toLocaleString()}\n团员关系：${Math.round(bond)}/100\n\n${ending}`);
+
+        this.ui.showEndOverlay(emoji, title, message, [
+            { label: '最终粉丝', value: Math.round(fans).toLocaleString() },
+            { label: '团员默契', value: `${Math.round(bond)} / 100` },
+            { label: '历时', value: `${turn - 1} 周` }
+        ]);
     }
 }

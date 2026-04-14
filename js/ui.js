@@ -142,6 +142,30 @@ export class UI {
         if (overlay) overlay.style.display = 'none';
     }
 
+    showEndOverlay(emoji, title, message, stats) {
+        const overlay = document.getElementById('end-overlay');
+        if (!overlay) return;
+
+        document.getElementById('end-emoji').textContent = emoji;
+        document.getElementById('end-title').textContent = title;
+        document.getElementById('end-message').textContent = message;
+
+        // Render stat pills
+        const statsEl = document.getElementById('end-stats');
+        statsEl.innerHTML = stats.map(s =>
+            `<div class="end-stat-item">
+                <span class="end-stat-label">${s.label}</span>
+                <span class="end-stat-value">${s.value}</span>
+            </div>`
+        ).join('');
+
+        overlay.style.display = 'flex';
+
+        document.getElementById('restart-btn').onclick = () => {
+            location.reload();
+        };
+    }
+
     showEasterEggNotice() {
         // Show a temporary banner at the top of the game screen
         const banner = document.createElement('div');

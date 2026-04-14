@@ -30,9 +30,8 @@ document.getElementById('execute-btn').addEventListener('click', () => {
         ui.renderState(state);
         ui.resetScheduleUI();
     } else if (result === 'gameover' || result === 'ending') {
-        // Game is over — re-render final state then show start screen after a short delay
+        // Render final state then show end overlay (handled inside engine)
         ui.renderState(state);
-        setTimeout(() => ui.showScreen('start'), 1500);
     }
-    // result === false means validation failed, do nothing (alert was already shown)
+    // result === false: validation failed, alert already shown
 });
