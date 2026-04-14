@@ -151,6 +151,7 @@ export const EVENT_POOL = [
         desc: '一个知名品牌主动联系，希望签下团体作为年度代言人，合同期一年，报价丰厚但要求颇多。',
         options: [
             {
+                // cost:0 here because income flows through effect() → modifyResource, not the cost deduction path
                 text: '✅ 接受代言（签约 ¥+300万，但增加压力）',
                 cost: 0,
                 effect(state) {

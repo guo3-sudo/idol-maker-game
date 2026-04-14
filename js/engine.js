@@ -112,7 +112,10 @@ export class GameEngine {
                     if (selectedOption.cost > 0) {
                         this.state.modifyResource('money', -selectedOption.cost);
                     }
-                    selectedOption.effect(this.state);
+                    const result = selectedOption.effect(this.state);
+                    if (result && result.msg) {
+                        alert(`📋 公关结果：\n${result.msg}`);
+                    }
                 }
                 this.ui.renderState(this.state);
             });

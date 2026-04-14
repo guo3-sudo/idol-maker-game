@@ -114,9 +114,10 @@ export class UI {
             btn.className = 'modal-btn';
             btn.textContent = opt.text;
             btn.addEventListener('click', () => {
-                this.hideEventModal();
-                onOptionSelect(opt);
-            });
+                    btn.disabled = true;
+                    this.hideEventModal();
+                    onOptionSelect(opt);
+                });
             optionsEl.appendChild(btn);
         });
 
