@@ -96,4 +96,35 @@ export class UI {
         const selects = document.querySelectorAll('#schedule-slots .slot-select');
         selects.forEach(s => { s.value = ''; });
     }
+
+    showEventModal(eventObj, onOptionSelect) {
+        const overlay = document.getElementById('modal-overlay');
+        const titleEl = document.getElementById('modal-title');
+        const descEl = document.getElementById('modal-desc');
+        const optionsEl = document.getElementById('modal-options');
+
+        if (!overlay || !titleEl || !descEl || !optionsEl) return;
+
+        titleEl.textContent = eventObj.title;
+        descEl.textContent = eventObj.desc;
+        optionsEl.innerHTML = '';
+
+        eventObj.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'modal-btn';
+            btn.textContent = opt.text;
+            btn.addEventListener('click', () => {
+                this.hideEventModal();
+                onOptionSelect(opt);
+            });
+            optionsEl.appendChild(btn);
+        });
+
+        overlay.style.display = 'flex';
+    }
+
+    hideEventModal() {
+        const overlay = document.getElementById('modal-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }
 }

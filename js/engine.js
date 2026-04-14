@@ -1,6 +1,7 @@
 // js/engine.js
 import { ACTIONS } from './actions.js';
 import { MAX_TURN } from './config.js';
+import { EVENT_POOL } from './events.js';
 
 export class GameEngine {
     constructor(state, ui) {
@@ -96,7 +97,28 @@ export class GameEngine {
             return 'ending';
         }
 
-        // 10. Reset schedule for next turn
+        // 10. Trigger random event
+        const bondFactor = (100 - this.state.bond) / 100;
+        const stressFactor = this.state.stress / 100;
+        const eventChance = 0.15 + bondFactor * 0.15 + stressFactor * 0.15;
+
+        if (Math.random() < eventChance) {
+            const randomEvent = EVENT_POOL[Math.floor(Math.random() * EVENT_POOL.length)];
+            this.ui.showEventModal(randomEvent, (selectedOption) => {
+                if (this.state.money < selectedOption.cost) {
+                    alert('资金不足，无法选择该方案！系统默认执行最差应对...');
+                    this.state.modifyResource('fans', -100000);
+                } else {
+                    if (selectedOption.cost > 0) {
+                        this.state.modifyResource('money', -selectedOption.cost);
+                    }
+                    selectedOption.effect(this.state);
+                }
+                this.ui.renderState(this.state);
+            });
+        }
+
+        // 11. Reset schedule for next turn
         state.schedule = new Array(state.schedule.length).fill(null);
 
         return true; // turn executed successfully
