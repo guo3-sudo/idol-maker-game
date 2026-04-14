@@ -3,6 +3,9 @@ import { ACTIONS } from './actions.js';
 import { MAX_TURN } from './config.js';
 import { EVENT_POOL } from './events.js';
 
+const TRIGGER_KEYS = new Set(['team_vacation', 'emergency_gig', 'disbandment_crisis']);
+const SLOT_UNLOCK_FANS = 50000;
+
 export class GameEngine {
     constructor(state, ui) {
         this.state = state;
@@ -10,21 +13,102 @@ export class GameEngine {
         // Snapshot taken at the START of each 4-week month cycle
         this._monthStartSnapshot = null;
         // Recent event IDs — last 3 triggered events are excluded from selection
-        // to prevent the same event from appearing back-to-back.
         this._recentEventIds = [];
+    }
+
+    /**
+     * Build the 6-card pool for the current turn.
+     * Returns array of { key, status: 'available'|'locked'|'cooldown'|'maxed', hintText }
+     */
+    buildSchedulePool(state) {
+        const MAX_CARDS = 6;
+        const MAX_PREVIEW = 2;
+
+        const available = [];  // selectable cards
+        const preview = [];    // locked / cooldown / maxed (grey preview)
+
+        for (const [key, action] of Object.entries(ACTIONS)) {
+            const isUnlocked = action.unlock(state);
+            const cooldownLeft = state.actionCooldowns[key] || 0;
+            const useCount = state.actionUseCounts[key] || 0;
+            const atMaxUses = useCount >= action.maxUses;
+
+            // Trigger-type actions: show only when condition is met, never as locked preview
+            if (action.triggerType !== null) {
+                if (isUnlocked) {
+                    available.push({ key, status: 'available', hintText: '' });
+                }
+                // else: invisible when inactive
+                continue;
+            }
+
+            if (isUnlocked && cooldownLeft === 0 && !atMaxUses) {
+                available.push({ key, status: 'available', hintText: '' });
+            } else if (!isUnlocked) {
+                preview.push({ key, status: 'locked', hintText: action.unlockHint });
+            } else if (atMaxUses) {
+                preview.push({ key, status: 'maxed', hintText: '已达使用上限' });
+            } else {
+                preview.push({ key, status: 'cooldown', hintText: `${cooldownLeft} 周后可用` });
+            }
+        }
+
+        const shuffle = (arr) => {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        };
+
+        const pool = [];
+        const triggerItems = available.filter(c => TRIGGER_KEYS.has(c.key));
+        const nonTriggerAvailable = shuffle(available.filter(c => !TRIGGER_KEYS.has(c.key)));
+
+        // 1. Add active trigger items first
+        for (const item of triggerItems) {
+            if (pool.length < MAX_CARDS) pool.push(item);
+        }
+
+        // 2. Guarantee one card per category from available non-trigger
+        const CATEGORIES = ['train', 'perform', 'activity', 'rest'];
+        for (const cat of CATEGORIES) {
+            if (pool.length >= MAX_CARDS) break;
+            const hascat = pool.some(c => ACTIONS[c.key].category === cat);
+            if (!hascat) {
+                const idx = nonTriggerAvailable.findIndex(c => ACTIONS[c.key].category === cat);
+                if (idx !== -1) {
+                    pool.push(nonTriggerAvailable.splice(idx, 1)[0]);
+                }
+            }
+        }
+
+        // 3. Fill to MAX_CARDS with remaining available
+        while (pool.length < MAX_CARDS && nonTriggerAvailable.length > 0) {
+            pool.push(nonTriggerAvailable.shift());
+        }
+
+        // 4. Fill remaining slots with preview items (max MAX_PREVIEW)
+        const previewShuffled = shuffle(preview.slice());
+        let previewAdded = 0;
+        while (pool.length < MAX_CARDS && previewAdded < MAX_PREVIEW && previewShuffled.length > 0) {
+            pool.push(previewShuffled.shift());
+            previewAdded++;
+        }
+
+        return pool;
     }
 
     executeTurn() {
         const state = this.state;
 
-        // 1. Check all slots are filled
-        if (state.schedule.includes(null)) {
-            this.ui.showToast('请为每个行程槽都安排行程！');
+        // 1. Check slots are filled
+        if (state.schedule.length < state.scheduleSlots) {
+            this.ui.showToast(`请选择 ${state.scheduleSlots} 个行程！`);
             return false;
         }
 
         // 2. Save month-start snapshot at the beginning of each 4-week cycle
-        //    Turns 1, 5, 9, 13 ... are the first turn of a new month.
         if ((state.turn - 1) % 4 === 0) {
             this._monthStartSnapshot = {
                 fans:   state.fans,
@@ -37,41 +121,33 @@ export class GameEngine {
             };
         }
 
-        // 3. Execute each action
+        // 3. Execute each selected action
         for (const actionKey of state.schedule) {
             const action = ACTIONS[actionKey];
-            if (!action) continue; // guard against invalid keys
-
-            // Deduct cost
-            state.modifyResource('money', -action.cost);
-            // Apply stamina and stress deltas
-            state.modifyResource('stamina', action.stamina);
-            state.modifyResource('stress', action.stress);
-
-            if (action.type === 'training') {
-                if (action.vocal)  state.modifyResource('vocal', action.vocal);
-                if (action.dance)  state.modifyResource('dance', action.dance);
-                if (action.charm)  state.modifyResource('charm', action.charm);
-            }
-
-            if (action.type === 'rest') {
-                if (action.bond) state.modifyResource('bond', action.bond);
-            }
-
-            if (action.type === 'gig') {
-                const successRate = Math.min(1.0, (state.vocal + state.dance + state.charm) / 300);
-                const income = Math.round((action.incomeBase || 0) + state.fans * 0.1 * successRate);
-                const newFans = (action.fansBase || 0) * successRate;
-                state.modifyResource('money', income);
-                state.modifyResource('fans', Math.round(newFans));
-            }
+            if (!action) continue;
+            action.apply(state);
         }
 
-        // 4. Apply stress rate multiplier from company scale
+        // 4. Update cooldowns and use counts for used actions
+        for (const actionKey of state.schedule) {
+            const action = ACTIONS[actionKey];
+            if (!action) continue;
+            if (action.cooldown > 0) {
+                state.actionCooldowns[actionKey] = action.cooldown;
+            }
+            state.actionUseCounts[actionKey] = (state.actionUseCounts[actionKey] || 0) + 1;
+        }
+
+        // 5. Decrement all active cooldowns by 1
+        for (const key of Object.keys(state.actionCooldowns)) {
+            state.actionCooldowns[key] = Math.max(0, state.actionCooldowns[key] - 1);
+        }
+
+        // 6. Apply passive stress from company scale
         const passiveStress = state.stress * (state.stressRate - 1) * 0.1;
         state.modifyResource('stress', passiveStress);
 
-        // 5. Stress overflow: if stress >= 100, penalize
+        // 7. Stress overflow penalty
         if (state.stress >= 100) {
             const penalty = Math.round(50000 + state.fans * 0.05);
             state.modifyResource('fans', -penalty);
@@ -80,40 +156,48 @@ export class GameEngine {
             this.ui.showToast('⚠️ 团队压力爆表！成员集体罢工，损失惨重！');
         }
 
-        // 6. Advance turn
+        // 8. Check 3rd slot unlock milestone
+        if (!state.slotUnlockAnnounced && state.fans >= SLOT_UNLOCK_FANS) {
+            state.scheduleSlots = 3;
+            state.slotUnlockAnnounced = true;
+            this.ui.showToast('🎉 粉丝突破 5 万！第 3 个行程槽位已解锁！');
+        }
+
+        // 9. Advance turn
         state.turn += 1;
 
-        // 7. Check bankruptcy
+        // 10. Check bankruptcy
         if (state.money < 0) {
             this._triggerGameOver('破产清算：公司资金耗尽，团体被迫解散。');
             return 'gameover';
         }
 
-        // 8. Check fan collapse
+        // 11. Check fan collapse
         if (state.fans <= 0 && state.turn > 5) {
             this._triggerGameOver('全网封杀：粉丝归零，团体彻底凉凉。');
             return 'gameover';
         }
 
-        // 9. Check end of game
+        // 12. Check end of game
         if (state.turn > MAX_TURN) {
             this._triggerFinalEnding();
             return 'ending';
         }
 
-        // 10. Determine if this turn ends a month (every 4 turns)
-        //     After advancing turn: new turn values 5, 9, 13 … mean a month just ended.
+        // 13. Month end check
         const isMonthEnd = state.turn > 1 && (state.turn - 1) % 4 === 0;
         const monthNum   = Math.ceil((state.turn - 1) / 4);
 
-        // 11. Trigger random event (higher base rate, capped at 75%)
-        const bondFactor   = (100 - this.state.bond) / 100;
-        const stressFactor = this.state.stress / 100;
+        // 14. Trigger random event
+        const bondFactor   = (100 - state.bond) / 100;
+        const stressFactor = state.stress / 100;
         const eventChance  = Math.min(0.75, 0.35 + bondFactor * 0.20 + stressFactor * 0.20);
 
-        // afterEvent: render state, then optionally show monthly summary
+        // afterEvent: refresh state display, rebuild card pool, then optionally show monthly summary
         const afterEvent = () => {
-            this.ui.renderState(this.state);
+            this.ui.renderState(state);
+            const newPool = this.buildSchedulePool(state);
+            this.ui.renderScheduleCards(newPool, state);
             if (isMonthEnd && this._monthStartSnapshot) {
                 this.ui.showMonthSummary({
                     month:  monthNum,
@@ -128,31 +212,29 @@ export class GameEngine {
             }
         };
 
+        // 15. Reset schedule for next turn
+        state.schedule = [];
+
         if (Math.random() < eventChance) {
-            // Pick from events not recently triggered; fall back to full pool if all are recent.
-            const COOLDOWN = 3; // how many past events to suppress
+            const COOLDOWN = 3;
             const freshPool = EVENT_POOL.filter(e => !this._recentEventIds.includes(e.id));
             const pool = freshPool.length > 0 ? freshPool : EVENT_POOL;
             const randomEvent = pool[Math.floor(Math.random() * pool.length)];
 
-            // Record this event; keep list capped at COOLDOWN length
             this._recentEventIds.push(randomEvent.id);
-            if (this._recentEventIds.length > COOLDOWN) {
-                this._recentEventIds.shift();
-            }
+            if (this._recentEventIds.length > COOLDOWN) this._recentEventIds.shift();
+
             this.ui.showEventModal(randomEvent, (selectedOption) => {
-                if (this.state.money < selectedOption.cost) {
-                    this.state.modifyResource('fans', -100000);
+                if (state.money < selectedOption.cost) {
+                    state.modifyResource('fans', -100000);
                     this.ui.showAlert(
                         '💸 资金不足',
                         '资金不足，无法选择该方案！系统已默认执行最差应对，损失10万粉丝。',
                         () => afterEvent()
                     );
                 } else {
-                    if (selectedOption.cost > 0) {
-                        this.state.modifyResource('money', -selectedOption.cost);
-                    }
-                    const result = selectedOption.effect(this.state);
+                    if (selectedOption.cost > 0) state.modifyResource('money', -selectedOption.cost);
+                    const result = selectedOption.effect(state);
                     if (result && result.msg) {
                         this.ui.showAlert('📋 公关结果', result.msg, () => afterEvent());
                     } else {
@@ -163,9 +245,6 @@ export class GameEngine {
         } else {
             afterEvent();
         }
-
-        // 12. Reset schedule for next turn
-        state.schedule = new Array(state.schedule.length).fill(null);
 
         return true;
     }
