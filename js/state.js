@@ -1,5 +1,5 @@
 // js/state.js
-import { COMPANY_SCALES } from './config.js';
+import { COMPANY_SCALES, SCHEDULE_SLOTS } from './config.js';
 
 const CLAMPED_ATTRS = new Set(['stamina', 'stress', 'bond', 'vocal', 'dance', 'charm']);
 
@@ -28,7 +28,7 @@ export class GameState {
         this.charm = 10;
 
         // Schedule (5 slots per turn)
-        this.schedule = [null, null, null, null, null];
+        this.schedule = new Array(SCHEDULE_SLOTS).fill(null);
     }
 
     initGame(groupName, scaleKey) {

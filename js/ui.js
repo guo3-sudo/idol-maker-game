@@ -1,5 +1,6 @@
 // js/ui.js
 import { ACTIONS } from './actions.js';
+import { SCHEDULE_SLOTS } from './config.js';
 
 export class UI {
     constructor() {
@@ -69,11 +70,11 @@ export class UI {
         }
 
         // Generate 5 slots
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < SCHEDULE_SLOTS; i++) {
             const div = document.createElement('div');
             div.className = 'slot-item';
             div.innerHTML = `
-                <label for="slot-select-${i}">Day ${i + 1}:</label>
+                <label for="slot-select-${i}">第${i + 1}天：</label>
                 <select id="slot-select-${i}" class="slot-select" data-index="${i}">
                     ${optionsHtml}
                 </select>
@@ -92,7 +93,7 @@ export class UI {
     }
 
     resetScheduleUI() {
-        const selects = document.querySelectorAll('.slot-select');
+        const selects = document.querySelectorAll('#schedule-slots .slot-select');
         selects.forEach(s => { s.value = ''; });
     }
 }
