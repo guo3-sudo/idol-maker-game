@@ -1,6 +1,5 @@
 // js/ui.js
-import { ACTIONS } from './actions.js';
-import { SCHEDULE_SLOTS } from './config.js';
+import { ACTIONS as ACTIONS_MAP } from './actions.js';
 
 export class UI {
     constructor() {
@@ -71,43 +70,74 @@ export class UI {
 
     }
 
-    initScheduleUI(onSlotChange) {
+    /**
+     * Render the 6-card schedule grid.
+     * pool: array of { key, status: 'available'|'locked'|'cooldown'|'maxed', hintText }
+     * state: GameState
+     */
+    renderScheduleCards(pool, state) {
         const container = document.getElementById('schedule-slots');
         if (!container) return;
         container.innerHTML = '';
 
-        // Build options HTML once
-        let optionsHtml = '<option value="">-- 选择安排 --</option>';
-        for (const [key, action] of Object.entries(ACTIONS)) {
-            optionsHtml += `<option value="${key}">${action.name}</option>`;
-        }
+        pool.forEach(({ key, status, hintText }) => {
+            const action = ACTIONS_MAP[key];
+            if (!action) return;
 
-        // Generate 5 slots
-        for (let i = 0; i < SCHEDULE_SLOTS; i++) {
-            const div = document.createElement('div');
-            div.className = 'slot-item';
-            div.innerHTML = `
-                <label for="slot-select-${i}">行程 ${i + 1}</label>
-                <select id="slot-select-${i}" class="slot-select" data-index="${i}">
-                    ${optionsHtml}
-                </select>
+            const isSelected = state.schedule.includes(key);
+            const isAvailable = status === 'available';
+
+            const card = document.createElement('div');
+            card.className = 'action-card' +
+                (isSelected  ? ' action-card--selected'  : '') +
+                (status === 'locked'   ? ' action-card--locked'   : '') +
+                (status === 'cooldown' ? ' action-card--cooldown' : '') +
+                (status === 'maxed'    ? ' action-card--cooldown' : '');
+
+            const categoryLabels = { train: '训练', perform: '演出', activity: '活动', rest: '休息' };
+            const categoryColors = { train: 'cat-train', perform: 'cat-perform', activity: 'cat-activity', rest: 'cat-rest' };
+
+            card.innerHTML = `
+                <div class="card-top">
+                    <span class="card-icon">${action.icon}</span>
+                    <span class="card-category ${categoryColors[action.category]}">${categoryLabels[action.category]}</span>
+                </div>
+                <div class="card-name">${action.name}</div>
+                <div class="card-effect">${isAvailable ? action.effectSummary : (hintText || action.unlockHint)}</div>
+                ${isSelected ? '<div class="card-selected-badge">✓ 已选</div>' : ''}
             `;
-            container.appendChild(div);
-        }
 
-        // Bind change events
-        container.querySelectorAll('.slot-select').forEach(select => {
-            select.addEventListener('change', (e) => {
-                const index = parseInt(e.target.dataset.index, 10);
-                const actionKey = e.target.value;
-                onSlotChange(index, actionKey === '' ? null : actionKey);
-            });
+            if (isAvailable && !isSelected) {
+                card.addEventListener('click', () => {
+                    if (state.schedule.length < state.scheduleSlots) {
+                        state.schedule.push(key);
+                        this.renderScheduleCards(pool, state);
+                        this.refreshSlotCounter(state);
+                    } else {
+                        this.showToast(`最多选 ${state.scheduleSlots} 个行程！`);
+                    }
+                });
+            } else if (isSelected) {
+                card.addEventListener('click', () => {
+                    state.schedule = state.schedule.filter(k => k !== key);
+                    this.renderScheduleCards(pool, state);
+                    this.refreshSlotCounter(state);
+                });
+            }
+
+            container.appendChild(card);
         });
+
+        this.refreshSlotCounter(state);
     }
 
-    resetScheduleUI() {
-        const selects = document.querySelectorAll('#schedule-slots .slot-select');
-        selects.forEach(s => { s.value = ''; });
+    refreshSlotCounter(state) {
+        const counter = document.getElementById('slot-counter');
+        if (!counter) return;
+        const selected = state.schedule.length;
+        const total = state.scheduleSlots;
+        counter.textContent = `已选 ${selected} / ${total} 个行程`;
+        counter.className = 'slot-counter' + (selected === total ? ' slot-counter--full' : '');
     }
 
     showEventModal(eventObj, onOptionSelect) {
