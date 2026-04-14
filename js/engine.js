@@ -9,6 +9,9 @@ export class GameEngine {
         this.ui = ui;
         // Snapshot taken at the START of each 4-week month cycle
         this._monthStartSnapshot = null;
+        // Recent event IDs — last 3 triggered events are excluded from selection
+        // to prevent the same event from appearing back-to-back.
+        this._recentEventIds = [];
     }
 
     executeTurn() {
@@ -126,7 +129,17 @@ export class GameEngine {
         };
 
         if (Math.random() < eventChance) {
-            const randomEvent = EVENT_POOL[Math.floor(Math.random() * EVENT_POOL.length)];
+            // Pick from events not recently triggered; fall back to full pool if all are recent.
+            const COOLDOWN = 3; // how many past events to suppress
+            const freshPool = EVENT_POOL.filter(e => !this._recentEventIds.includes(e.id));
+            const pool = freshPool.length > 0 ? freshPool : EVENT_POOL;
+            const randomEvent = pool[Math.floor(Math.random() * pool.length)];
+
+            // Record this event; keep list capped at COOLDOWN length
+            this._recentEventIds.push(randomEvent.id);
+            if (this._recentEventIds.length > COOLDOWN) {
+                this._recentEventIds.shift();
+            }
             this.ui.showEventModal(randomEvent, (selectedOption) => {
                 if (this.state.money < selectedOption.cost) {
                     this.state.modifyResource('fans', -100000);
