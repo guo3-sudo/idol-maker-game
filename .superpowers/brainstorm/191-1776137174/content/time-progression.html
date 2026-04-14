@@ -1,0 +1,29 @@
+<h2>时间推进机制 (Time Progression)</h2>
+<p class="subtitle">对于经营养成游戏，时间的流逝方式决定了玩家的决策节奏。</p>
+
+<div class="options">
+  <div class="option" data-choice="turn-based" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>回合制 / 行程安排 (Turn-based Schedule) [推荐]</h3>
+      <p><b>玩法：</b> 每周（或每月）为一个回合。玩家分配本周的行程（如：周一上课、周三演出、周末休息），然后点击“执行”。<br>
+         <b>优势：</b> 决策感最强，可以慢慢思考最优解。事件会在回合结算时随机触发。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="real-time-pause" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>可暂停的即时制 (Real-time with Pause)</h3>
+      <p><b>玩法：</b> 时间像时钟一样流逝。玩家随时指派任务给偶像，任务需要一定真实时间（如几秒到几分钟）完成。随时可以暂停处理公关危机。<br>
+         <b>优势：</b> 节奏紧凑，临场感更强，类似《模拟人生》或《缺氧》。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="idle-tick" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>离线挂机/Tick制 (Idle Progression)</h3>
+      <p><b>玩法：</b> 按下“开始特训”，需要真实时间 1 小时完成，关闭网页也能继续。<br>
+         <b>优势：</b> 适合碎片时间，极度轻量化，但削弱了制作人的“紧张感”。</p>
+    </div>
+  </div>
+</div>
