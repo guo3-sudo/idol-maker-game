@@ -11,7 +11,9 @@ function startGame(name, scale) {
     state.initGame(name, scale);
     ui.showScreen('game');
     ui.renderState(state);
-    ui.resetScheduleUI();
+    // Build initial card pool and render
+    const pool = engine.buildSchedulePool(state);
+    ui.renderScheduleCards(pool, state);
     if (state._easterEggTriggered) {
         ui.showEasterEggNotice();
     }
@@ -20,18 +22,12 @@ function startGame(name, scale) {
 ui.initScaleCards();
 ui.bindStartButton(startGame);
 
-ui.initScheduleUI((index, actionKey) => {
-    state.schedule[index] = actionKey;
-});
-
 document.getElementById('execute-btn').addEventListener('click', () => {
     const result = engine.executeTurn();
     if (result === true) {
-        ui.renderState(state);
-        ui.resetScheduleUI();
+        // State display + card pool refresh handled inside engine.executeTurn -> afterEvent()
     } else if (result === 'gameover' || result === 'ending') {
-        // Render final state then show end overlay (handled inside engine)
         ui.renderState(state);
     }
-    // result === false: validation failed, alert already shown
+    // result === false: validation failed, toast already shown
 });
