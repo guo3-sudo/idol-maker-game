@@ -1,5 +1,5 @@
 // js/state.js
-import { COMPANY_SCALES, SCHEDULE_SLOTS } from './config.js';
+import { COMPANY_SCALES } from './config.js';
 
 const CLAMPED_ATTRS = new Set(['stamina', 'stress', 'bond', 'vocal', 'dance', 'charm']);
 
@@ -27,8 +27,16 @@ export class GameState {
         this.dance = 10;
         this.charm = 10;
 
-        // Schedule (5 slots per turn)
-        this.schedule = new Array(SCHEDULE_SLOTS).fill(null);
+        // Schedule: array of selected action keys (up to scheduleSlots)
+        this.schedule = [];
+
+        // Dynamic schedule slots: starts at 2, unlocks 3rd at 50k fans
+        this.scheduleSlots = 2;
+        this.slotUnlockAnnounced = false;
+
+        // Frequency control
+        this.actionCooldowns = {};   // { [actionKey]: weeksRemaining }
+        this.actionUseCounts = {};   // { [actionKey]: totalTimesUsed }
 
         this._easterEggTriggered = false;
     }
