@@ -7,6 +7,8 @@ export class GameEngine {
     constructor(state, ui) {
         this.state = state;
         this.ui = ui;
+        // Snapshot taken at the START of each 4-week month cycle
+        this._monthStartSnapshot = null;
     }
 
     executeTurn() {
@@ -14,20 +16,23 @@ export class GameEngine {
 
         // 1. Check all slots are filled
         if (state.schedule.includes(null)) {
-            alert('请为每个行程槽都安排行程！');
+            this.ui.showToast('请为每个行程槽都安排行程！');
             return false;
         }
 
-        // 2. Snapshot current values for monthly summary
-        const snapshot = {
-            fans:   state.fans,
-            money:  state.money,
-            vocal:  state.vocal,
-            dance:  state.dance,
-            charm:  state.charm,
-            bond:   state.bond,
-            stress: state.stress,
-        };
+        // 2. Save month-start snapshot at the beginning of each 4-week cycle
+        //    Turns 1, 5, 9, 13 ... are the first turn of a new month.
+        if ((state.turn - 1) % 4 === 0) {
+            this._monthStartSnapshot = {
+                fans:   state.fans,
+                money:  state.money,
+                vocal:  state.vocal,
+                dance:  state.dance,
+                charm:  state.charm,
+                bond:   state.bond,
+                stress: state.stress,
+            };
+        }
 
         // 3. Execute each action
         for (const actionKey of state.schedule) {
@@ -41,7 +46,6 @@ export class GameEngine {
             state.modifyResource('stress', action.stress);
 
             if (action.type === 'training') {
-                // Apply attribute gains (vocal, dance, or charm — whichever is set)
                 if (action.vocal)  state.modifyResource('vocal', action.vocal);
                 if (action.dance)  state.modifyResource('dance', action.dance);
                 if (action.charm)  state.modifyResource('charm', action.charm);
@@ -52,7 +56,6 @@ export class GameEngine {
             }
 
             if (action.type === 'gig') {
-                // Income formula: base + fans * 0.1 * successRate (capped at 1.0)
                 const successRate = Math.min(1.0, (state.vocal + state.dance + state.charm) / 300);
                 const income = Math.round((action.incomeBase || 0) + state.fans * 0.1 * successRate);
                 const newFans = (action.fansBase || 0) * successRate;
@@ -62,11 +65,6 @@ export class GameEngine {
         }
 
         // 4. Apply stress rate multiplier from company scale
-        // (stressRate is stored in state, applied as post-turn modifier)
-        // We already applied raw stress increments; scale acts as a weekly passive multiplier
-        // Apply: stress += (stress * (stressRate - 1)) to simulate company-scale pressure
-        // passiveStress is negative for low-stressRate companies (e.g. indie: 0.8),
-        // providing a gentle weekly stress relief — intentional design.
         const passiveStress = state.stress * (state.stressRate - 1) * 0.1;
         state.modifyResource('stress', passiveStress);
 
@@ -75,8 +73,8 @@ export class GameEngine {
             const penalty = Math.round(50000 + state.fans * 0.05);
             state.modifyResource('fans', -penalty);
             state.modifyResource('money', -200000);
-            state.modifyResource('stress', 80 - state.stress); // knock back down after crisis
-            alert('⚠️ 团队压力爆表！成员集体罢工，损失惨重！');
+            state.modifyResource('stress', 80 - state.stress);
+            this.ui.showToast('⚠️ 团队压力爆表！成员集体罢工，损失惨重！');
         }
 
         // 6. Advance turn
@@ -84,46 +82,45 @@ export class GameEngine {
 
         // 7. Check bankruptcy
         if (state.money < 0) {
-            // Note: schedule not reset here; state.initGame().reset() handles this on restart
             this._triggerGameOver('破产清算：公司资金耗尽，团体被迫解散。');
             return 'gameover';
         }
 
-        // 8. Check fan collapse (塌房)
+        // 8. Check fan collapse
         if (state.fans <= 0 && state.turn > 5) {
-            // Note: schedule not reset here; state.initGame().reset() handles this on restart
             this._triggerGameOver('全网封杀：粉丝归零，团体彻底凉凉。');
             return 'gameover';
         }
 
-        // 9. Check end of game (156 turns)
+        // 9. Check end of game
         if (state.turn > MAX_TURN) {
             this._triggerFinalEnding();
             return 'ending';
         }
 
         // 10. Determine if this turn ends a month (every 4 turns)
+        //     After advancing turn: new turn values 5, 9, 13 … mean a month just ended.
         const isMonthEnd = state.turn > 1 && (state.turn - 1) % 4 === 0;
         const monthNum   = Math.ceil((state.turn - 1) / 4);
 
-        // 11. Trigger random event
+        // 11. Trigger random event (higher base rate, capped at 75%)
         const bondFactor   = (100 - this.state.bond) / 100;
         const stressFactor = this.state.stress / 100;
         const eventChance  = Math.min(0.75, 0.35 + bondFactor * 0.20 + stressFactor * 0.20);
 
-        // afterEvent: called after event (or directly if no event)
+        // afterEvent: render state, then optionally show monthly summary
         const afterEvent = () => {
             this.ui.renderState(this.state);
-            if (isMonthEnd) {
+            if (isMonthEnd && this._monthStartSnapshot) {
                 this.ui.showMonthSummary({
                     month:  monthNum,
-                    fans:   { before: snapshot.fans,   after: state.fans   },
-                    money:  { before: snapshot.money,  after: state.money  },
-                    vocal:  { before: snapshot.vocal,  after: state.vocal  },
-                    dance:  { before: snapshot.dance,  after: state.dance  },
-                    charm:  { before: snapshot.charm,  after: state.charm  },
-                    bond:   { before: snapshot.bond,   after: state.bond   },
-                    stress: { before: snapshot.stress, after: state.stress },
+                    fans:   { before: this._monthStartSnapshot.fans,   after: state.fans   },
+                    money:  { before: this._monthStartSnapshot.money,  after: state.money  },
+                    vocal:  { before: this._monthStartSnapshot.vocal,  after: state.vocal  },
+                    dance:  { before: this._monthStartSnapshot.dance,  after: state.dance  },
+                    charm:  { before: this._monthStartSnapshot.charm,  after: state.charm  },
+                    bond:   { before: this._monthStartSnapshot.bond,   after: state.bond   },
+                    stress: { before: this._monthStartSnapshot.stress, after: state.stress },
                 });
             }
         };
@@ -132,27 +129,32 @@ export class GameEngine {
             const randomEvent = EVENT_POOL[Math.floor(Math.random() * EVENT_POOL.length)];
             this.ui.showEventModal(randomEvent, (selectedOption) => {
                 if (this.state.money < selectedOption.cost) {
-                    alert('资金不足，无法选择该方案！系统默认执行最差应对...');
                     this.state.modifyResource('fans', -100000);
+                    this.ui.showAlert(
+                        '💸 资金不足',
+                        '资金不足，无法选择该方案！系统已默认执行最差应对，损失10万粉丝。',
+                        () => afterEvent()
+                    );
                 } else {
                     if (selectedOption.cost > 0) {
                         this.state.modifyResource('money', -selectedOption.cost);
                     }
                     const result = selectedOption.effect(this.state);
                     if (result && result.msg) {
-                        alert(`📋 公关结果：\n${result.msg}`);
+                        this.ui.showAlert('📋 公关结果', result.msg, () => afterEvent());
+                    } else {
+                        afterEvent();
                     }
                 }
-                afterEvent();
             });
         } else {
             afterEvent();
         }
 
-        // 11. Reset schedule for next turn
+        // 12. Reset schedule for next turn
         state.schedule = new Array(state.schedule.length).fill(null);
 
-        return true; // turn executed successfully
+        return true;
     }
 
     _triggerGameOver(message) {
@@ -172,22 +174,22 @@ export class GameEngine {
         const { fans, bond, turn } = this.state;
         let emoji, title, message;
 
-        if (fans < 100000) {
+        if (fans < 50000) {
             emoji   = '😔';
             title   = '【结局 D】无人问津的毕业';
-            message = '三年期满未能续约，成员们黯然退圈，转型素人……下次一定能行的。';
-        } else if (fans < 1000000) {
+            message = '一年期满未能续约，成员们黯然退圈，转型素人……下次一定能行的。';
+        } else if (fans < 500000) {
             emoji   = '🌟';
             title   = '【结局 C】娱乐圈的生存之道';
             message = '成为娱乐圈的二线团体，靠接小商演和直播带货维持生计，也算一种成功。';
-        } else if (fans < 5000000) {
+        } else if (fans < 2000000) {
             emoji   = '🔥';
             title   = '【结局 B】当红炸子鸡';
-            message = '拿下年度最佳组合奖，举办全国巡演，成员们星途璀璨！';
+            message = '拿下年度最佳新人奖，举办全国巡演，成员们星途璀璨！';
         } else if (bond > 80) {
             emoji   = '👑';
             title   = '【结局 A · 真结局】国民天团（传奇）';
-            message = '火爆全球，举办世界巡演，全员保持初心、关系融洽。你打造了一个娱乐圈永远无法复制的神话！';
+            message = '首年即火爆全国，举办大型演唱会，全员保持初心、关系融洽。你打造了一个娱乐圈永远无法复制的神话！';
         } else {
             emoji   = '💫';
             title   = '【结局 B+】当红炸子鸡（貌合神离）';

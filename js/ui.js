@@ -142,6 +142,38 @@ export class UI {
         if (overlay) overlay.style.display = 'none';
     }
 
+    // Non-blocking banner — auto-dismisses after 3.5 s
+    showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'game-toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    // Blocking single-button alert — reuses modal overlay
+    showAlert(title, body, onClose) {
+        const overlay   = document.getElementById('modal-overlay');
+        const titleEl   = document.getElementById('modal-title');
+        const descEl    = document.getElementById('modal-desc');
+        const optionsEl = document.getElementById('modal-options');
+        if (!overlay || !titleEl || !descEl || !optionsEl) return;
+
+        titleEl.textContent = title;
+        descEl.textContent  = body;
+        optionsEl.innerHTML = '';
+
+        const btn = document.createElement('button');
+        btn.className   = 'modal-btn modal-btn--continue';
+        btn.textContent = '确认';
+        btn.addEventListener('click', () => {
+            this.hideEventModal();
+            if (onClose) onClose();
+        });
+        optionsEl.appendChild(btn);
+        overlay.style.display = 'flex';
+    }
+
     showMonthSummary(data) {
         const overlay   = document.getElementById('modal-overlay');
         const titleEl   = document.getElementById('modal-title');

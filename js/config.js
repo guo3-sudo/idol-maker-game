@@ -6,6 +6,6 @@ export const COMPANY_SCALES = {
     revival: { name: '过气重组', money: 500000, fans: 100000, bond: 60, stressRate: 1.2 }
 };
 
-export const MAX_TURN = 156; // 3 years * 52 weeks
+export const MAX_TURN = 52; // 1 year * 52 weeks
 
 export const SCHEDULE_SLOTS = 3;
