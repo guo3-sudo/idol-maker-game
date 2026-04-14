@@ -33,8 +33,12 @@ body {
 
 #start-screen {
     min-height: 100vh;
-    display: flex;
     flex-direction: column;
+}
+
+/* ID selector (1,1,0) > .screen.active (0,2,0): ensure flex layout when active */
+#start-screen.active {
+    display: flex;
 }
 
 /* Hero Section */
