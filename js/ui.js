@@ -27,21 +27,32 @@ export class UI {
     }
 
     renderState(state) {
-        document.getElementById('ui-group-name').textContent = state.groupName;
-        document.getElementById('ui-turn').textContent = state.turn;
-        document.getElementById('ui-money').textContent = state.money.toLocaleString();
-        document.getElementById('ui-fans').textContent = state.fans.toLocaleString();
+        const nameEl = document.getElementById('ui-group-name');
+        if (nameEl) nameEl.textContent = state.groupName;
+        const turnEl = document.getElementById('ui-turn');
+        if (turnEl) turnEl.textContent = state.turn;
+        const moneyEl = document.getElementById('ui-money');
+        if (moneyEl) moneyEl.textContent = state.money.toLocaleString();
+        const fansEl = document.getElementById('ui-fans');
+        if (fansEl) fansEl.textContent = state.fans.toLocaleString();
 
         const updateBar = (id, val) => {
-            document.getElementById(`bar-${id}`).value = val;
-            document.getElementById(`text-${id}`).textContent = Math.round(val);
+            const bar = document.getElementById(`bar-${id}`);
+            const txt = document.getElementById(`text-${id}`);
+            if (bar) bar.value = val;
+            if (txt) txt.textContent = Math.round(val);
         };
         updateBar('stamina', state.stamina);
         updateBar('stress', state.stress);
         updateBar('bond', state.bond);
 
-        document.getElementById('text-vocal').textContent = Math.round(state.vocal);
-        document.getElementById('text-dance').textContent = Math.round(state.dance);
-        document.getElementById('text-charm').textContent = Math.round(state.charm);
+        const vocalEl = document.getElementById('text-vocal');
+        if (vocalEl) vocalEl.textContent = Math.round(state.vocal);
+        const danceEl = document.getElementById('text-dance');
+        if (danceEl) danceEl.textContent = Math.round(state.dance);
+        const charmEl = document.getElementById('text-charm');
+        if (charmEl) charmEl.textContent = Math.round(state.charm);
+
+        // TODO (Task 4): render schedule slots
     }
 }

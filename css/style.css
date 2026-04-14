@@ -101,3 +101,12 @@ progress[value]::-webkit-progress-value {
 #bar-stress[value]::-webkit-progress-value {
     background-color: #ff4757;
 }
+progress::-moz-progress-bar {
+    background-color: #2ed573;
+}
+#bar-stress::-moz-progress-bar {
+    background-color: #ff4757;
+}
+#execute-btn {
+    margin-top: 20px;
+}
