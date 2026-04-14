@@ -9,6 +9,10 @@ function startGame(name, scale) {
     state.initGame(name, scale);
     ui.showScreen('game');
     ui.renderState(state);
+    ui.resetScheduleUI();
 }
 
 ui.bindStartButton(startGame);
+ui.initScheduleUI((index, actionKey) => {
+    state.schedule[index] = actionKey;
+});

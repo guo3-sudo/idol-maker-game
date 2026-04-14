@@ -110,3 +110,22 @@ progress::-moz-progress-bar {
 #execute-btn {
     margin-top: 20px;
 }
+
+.slot-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.slot-item label {
+    width: 60px;
+    font-weight: bold;
+    color: #555;
+}
+.slot-select {
+    flex-grow: 1;
+    padding: 8px;
+}

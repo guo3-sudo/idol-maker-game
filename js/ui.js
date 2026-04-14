@@ -1,4 +1,6 @@
 // js/ui.js
+import { ACTIONS } from './actions.js';
+
 export class UI {
     constructor() {
         this.screens = {
@@ -53,6 +55,44 @@ export class UI {
         const charmEl = document.getElementById('text-charm');
         if (charmEl) charmEl.textContent = Math.round(state.charm);
 
-        // TODO (Task 4): render schedule slots
+    }
+
+    initScheduleUI(onSlotChange) {
+        const container = document.getElementById('schedule-slots');
+        if (!container) return;
+        container.innerHTML = '';
+
+        // Build options HTML once
+        let optionsHtml = '<option value="">-- 选择安排 --</option>';
+        for (const [key, action] of Object.entries(ACTIONS)) {
+            optionsHtml += `<option value="${key}">${action.name}</option>`;
+        }
+
+        // Generate 5 slots
+        for (let i = 0; i < 5; i++) {
+            const div = document.createElement('div');
+            div.className = 'slot-item';
+            div.innerHTML = `
+                <label for="slot-select-${i}">Day ${i + 1}:</label>
+                <select id="slot-select-${i}" class="slot-select" data-index="${i}">
+                    ${optionsHtml}
+                </select>
+            `;
+            container.appendChild(div);
+        }
+
+        // Bind change events
+        container.querySelectorAll('.slot-select').forEach(select => {
+            select.addEventListener('change', (e) => {
+                const index = parseInt(e.target.dataset.index, 10);
+                const actionKey = e.target.value;
+                onSlotChange(index, actionKey === '' ? null : actionKey);
+            });
+        });
+    }
+
+    resetScheduleUI() {
+        const selects = document.querySelectorAll('.slot-select');
+        selects.forEach(s => { s.value = ''; });
     }
 }
