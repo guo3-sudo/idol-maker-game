@@ -155,7 +155,19 @@ export class UI {
         eventObj.options.forEach(opt => {
             const btn = document.createElement('button');
             btn.className = 'modal-btn';
-            btn.textContent = opt.text;
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'modal-btn-text';
+            textSpan.textContent = opt.text;
+            btn.appendChild(textSpan);
+
+            if (opt.actualCost > 0) {
+                const costSpan = document.createElement('span');
+                costSpan.className = 'modal-btn-cost';
+                costSpan.textContent = `实际扣费 ¥${opt.actualCost.toLocaleString()}`;
+                btn.appendChild(costSpan);
+            }
+
             btn.addEventListener('click', () => {
                     btn.disabled = true;
                     this.hideEventModal();
@@ -214,11 +226,14 @@ export class UI {
         titleEl.textContent = `第 ${data.month} 月 · 月度小结`;
 
         const fmt = (n) => Math.round(n).toLocaleString();
-        const delta = (before, after) => {
+        const delta = (before, after, inverse = false) => {
             const d = Math.round(after - before);
-            if (d > 0) return `<span class="delta-pos">+${d.toLocaleString()}</span>`;
-            if (d < 0) return `<span class="delta-neg">${d.toLocaleString()}</span>`;
-            return `<span class="delta-zero">—</span>`;
+            if (d === 0) return `<span class="delta-zero">—</span>`;
+            const isPos = d > 0;
+            const isGood = inverse ? !isPos : isPos;
+            const cls = isGood ? 'delta-pos' : 'delta-neg';
+            const sign = isPos ? '+' : '';
+            return `<span class="${cls}">${sign}${d.toLocaleString()}</span>`;
         };
 
         descEl.innerHTML = `
@@ -256,7 +271,7 @@ export class UI {
                 <div class="summary-row">
                     <span>😰 压力</span>
                     <span class="summary-now">${fmt(data.stress.after)}</span>
-                    ${delta(data.stress.before, data.stress.after)}
+                    ${delta(data.stress.before, data.stress.after, true)}
                 </div>
             </div>
         `;
@@ -271,9 +286,24 @@ export class UI {
         overlay.style.display = 'flex';
     }
 
-    showEndOverlay(emoji, title, message, stats) {
+    showEndOverlay(emoji, title, message, stats, opts = {}) {
         const overlay = document.getElementById('end-overlay');
         if (!overlay) return;
+
+        // Group name
+        const groupNameEl = document.getElementById('end-group-name');
+        if (groupNameEl) groupNameEl.textContent = opts.groupName || '';
+
+        // Badge
+        const badgeEl = document.getElementById('end-badge');
+        if (badgeEl) {
+            if (opts.badge) {
+                badgeEl.textContent = opts.badge;
+                badgeEl.style.display = '';
+            } else {
+                badgeEl.style.display = 'none';
+            }
+        }
 
         document.getElementById('end-emoji').textContent = emoji;
         document.getElementById('end-title').textContent = title;
@@ -296,11 +326,6 @@ export class UI {
     }
 
     showEasterEggNotice() {
-        // Show a temporary banner at the top of the game screen
-        const banner = document.createElement('div');
-        banner.className = 'easter-egg-banner';
-        banner.textContent = '✨ 好名字！系统感应到强大的星势，初始粉丝 +20万，魅力 +5！';
-        document.getElementById('game-screen').prepend(banner);
-        setTimeout(() => banner.remove(), 4000);
+        this.showAlert('✨ 星势感应！', '系统感应到强大的星势，初始粉丝 +20万，魅力 +5！');
     }
 }

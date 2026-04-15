@@ -219,5 +219,110 @@ export const EVENT_POOL = [
                 }
             }
         ]
+    },
+    {
+        id: 'e_member_conflict',
+        title: '💢 成员摩擦激化',
+        desc: '团内两位成员在排练时爆发激烈争吵，消息已在粉丝圈中流传，气氛剑拔弩张，团队向心力岌岌可危。',
+        options: [
+            {
+                text: '🤝 聘请专业调解师介入（¥8万）',
+                cost: 80000,
+                effect(state) {
+                    state.modifyResource('bond', 15);
+                    state.modifyResource('fans', 10000);
+                    return { msg: '专业介入效果显著，成员和解，粉丝为你们的成熟处理方式点赞！', fans: 10000, money: 0 };
+                }
+            },
+            {
+                text: '💬 制作人亲自找成员谈心（免费）',
+                cost: 0,
+                effect(state) {
+                    if (Math.random() > 0.5) {
+                        state.modifyResource('bond', 5);
+                        return { msg: '谈心有所成效，成员态度有所缓和。', fans: 0, money: 0 };
+                    }
+                    state.modifyResource('bond', -5);
+                    return { msg: '谈心效果不理想，矛盾并未得到实质性改善。', fans: 0, money: 0 };
+                }
+            },
+            {
+                text: '🙈 放任不管，让他们自己解决',
+                cost: 0,
+                effect(state) {
+                    state.modifyResource('bond', -20);
+                    state.modifyResource('fans', -30000);
+                    return { msg: '矛盾持续发酵，粉丝对团队未来失去信心，大量脱粉。', fans: -30000, money: 0 };
+                }
+            }
+        ]
+    },
+    {
+        id: 'e_solo_offer',
+        title: '🌠 成员收到Solo邀约',
+        desc: '一位核心成员收到某大型综艺的Solo出道邀约，出场费丰厚，但档期与团体活动高度重叠，成员内心动摇。',
+        options: [
+            {
+                text: '✅ 支持成员接受solo（免费）',
+                cost: 0,
+                effect(state) {
+                    state.modifyResource('bond', -10);
+                    state.modifyResource('charm', 5);
+                    state.modifyResource('fans', 20000);
+                    return { msg: '成员solo大获成功，个人魅力提升，也带来了一批新粉丝；但团队凝聚力略有下降。', fans: 20000, money: 0 };
+                }
+            },
+            {
+                text: '💰 额外奖金挽留（¥5万）',
+                cost: 50000,
+                effect(state) {
+                    state.modifyResource('bond', 5);
+                    state.modifyResource('stress', 10);
+                    return { msg: '成员留下了，但对未来发展方向仍有顾虑，压力悄然上升。', fans: 0, money: 0 };
+                }
+            },
+            {
+                text: '🤐 不表态，让成员自己决定',
+                cost: 0,
+                effect(state) {
+                    state.modifyResource('bond', -15);
+                    state.modifyResource('stress', 15);
+                    return { msg: '成员感到被忽视，无论做什么决定都心存芥蒂，团内气氛变得紧绷。', fans: 0, money: 0 };
+                }
+            }
+        ]
+    },
+    {
+        id: 'e_fan_faction',
+        title: '⚡ 粉丝站队风波',
+        desc: '两大成员的粉丝派系在社交平台激烈交战，互相攻击、拉踩引战，已严重影响到团体的整体形象。',
+        options: [
+            {
+                text: '📢 发布官方联合声明（¥3万）',
+                cost: 30000,
+                effect(state) {
+                    state.modifyResource('bond', 5);
+                    return { msg: '官方声明呼吁理性追星，理智粉纷纷响应，局势逐渐平息。', fans: 0, money: 0 };
+                }
+            },
+            {
+                text: '🤝 各自粉头私下安抚（免费）',
+                cost: 0,
+                effect(state) {
+                    state.modifyResource('fans', -20000);
+                    state.modifyResource('bond', -5);
+                    return { msg: '私下安抚效果有限，路人对内斗印象深刻，掉了一批粉。', fans: -20000, money: 0 };
+                }
+            },
+            {
+                text: '😶 保持沉默，静观其变',
+                cost: 0,
+                effect(state) {
+                    state.modifyResource('fans', -50000);
+                    state.modifyResource('bond', -15);
+                    return { msg: '沉默被解读为纵容，风波愈演愈烈，大量粉丝彻底寒心脱粉。', fans: -50000, money: 0 };
+                }
+            }
+        ]
     }
 ];

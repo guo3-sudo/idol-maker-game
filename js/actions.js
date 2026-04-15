@@ -15,39 +15,39 @@ export const ACTIONS = {
     // ── 训练类 ─────────────────────────────────────────
     train_vocal: {
         name: '声乐训练', category: 'train', icon: '🎤',
-        effectSummary: '唱功 +4，体力 -10，压力 +5',
+        effectSummary: '唱功 +4，体力 -15，压力 +3',
         cooldown: 0, maxUses: Infinity, triggerType: null,
         unlock: () => true, unlockHint: '',
         apply(state) {
             state.modifyResource('money', -50000);
-            state.modifyResource('stamina', -10);
-            state.modifyResource('stress', 5);
+            state.modifyResource('stamina', -15);
+            state.modifyResource('stress', 3);
             state.modifyResource('vocal', 4);
         }
     },
 
     train_dance: {
         name: '舞蹈训练', category: 'train', icon: '💃',
-        effectSummary: '舞蹈 +4，体力 -10，压力 +5',
+        effectSummary: '舞蹈 +4，体力 -15，压力 +3',
         cooldown: 0, maxUses: Infinity, triggerType: null,
         unlock: () => true, unlockHint: '',
         apply(state) {
             state.modifyResource('money', -50000);
-            state.modifyResource('stamina', -10);
-            state.modifyResource('stress', 5);
+            state.modifyResource('stamina', -15);
+            state.modifyResource('stress', 3);
             state.modifyResource('dance', 4);
         }
     },
 
     train_charm: {
         name: '形象管理', category: 'train', icon: '✨',
-        effectSummary: '魅力 +4，体力 -10，压力 +5',
+        effectSummary: '魅力 +4，体力 -12，压力 +4',
         cooldown: 0, maxUses: Infinity, triggerType: null,
         unlock: () => true, unlockHint: '',
         apply(state) {
             state.modifyResource('money', -50000);
-            state.modifyResource('stamina', -10);
-            state.modifyResource('stress', 5);
+            state.modifyResource('stamina', -12);
+            state.modifyResource('stress', 4);
             state.modifyResource('charm', 4);
         }
     },
@@ -280,6 +280,32 @@ export const ACTIONS = {
             state.modifyResource('money', -200000);
             state.modifyResource('bond', 30);
             state.modifyResource('stress', -10);
+        }
+    },
+
+    team_bonding: {
+        name: '团建活动', category: 'rest', icon: '🎭',
+        effectSummary: '默契 +15，压力 -10，体力 +5',
+        cooldown: 3, maxUses: Infinity, triggerType: null,
+        unlock: () => true, unlockHint: '',
+        apply(state) {
+            state.modifyResource('money', -50000);
+            state.modifyResource('bond', 15);
+            state.modifyResource('stress', -10);
+            state.modifyResource('stamina', 5);
+        }
+    },
+
+    meditation: {
+        name: '冥想减压', category: 'rest', icon: '🧘',
+        effectSummary: '压力 -25，体力 +20（压力 ≥40 解锁）',
+        cooldown: 2, maxUses: Infinity, triggerType: null,
+        unlock: (state) => state.stress >= 40,
+        unlockHint: '团队压力达到 40 时解锁',
+        apply(state) {
+            state.modifyResource('money', -30000);
+            state.modifyResource('stress', -25);
+            state.modifyResource('stamina', 20);
         }
     }
 };

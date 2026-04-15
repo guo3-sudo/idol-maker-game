@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0533"/>
+      <stop offset="50%" style="stop-color:#2d0a4e"/>
+      <stop offset="100%" style="stop-color:#0f0c1a"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="30%" cy="60%" r="50%">
+      <stop offset="0%" style="stop-color:rgba(255,71,87,0.25)"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="70%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:rgba(126,87,255,0.3)"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- Decorative dots -->
+  <circle cx="120" cy="100" r="3" fill="rgba(255,255,255,0.15)"/>
+  <circle cx="320" cy="60" r="2" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="900" cy="80" r="4" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="1100" cy="150" r="2" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="80" cy="500" r="3" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="1050" cy="520" r="2" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="600" cy="30" r="2" fill="rgba(255,255,255,0.08)"/>
+
+  <!-- Fire emoji -->
+  <text x="600" y="230" text-anchor="middle" font-size="120" font-family="Apple Color Emoji, Segoe UI Emoji, sans-serif">🔥</text>
+
+  <!-- Main title -->
+  <text x="600" y="330" text-anchor="middle"
+        font-family="-apple-system, PingFang SC, Microsoft YaHei, sans-serif"
+        font-size="72" font-weight="900" letter-spacing="6"
+        fill="url(#titleGrad)">
+    <defs>
+      <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#ff6b81"/>
+        <stop offset="50%" style="stop-color:#ffa502"/>
+        <stop offset="100%" style="stop-color:#ffdd59"/>
+      </linearGradient>
+    </defs>
+    燃烧吧！制作人
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="395" text-anchor="middle"
+        font-family="-apple-system, PingFang SC, Microsoft YaHei, sans-serif"
+        font-size="28" fill="rgba(255,255,255,0.55)" letter-spacing="4">
+    1 年 · 52 周 · 打造一个传奇
+  </text>
+
+  <!-- Bottom tag -->
+  <rect x="480" y="480" width="240" height="44" rx="22" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="600" y="508" text-anchor="middle"
+        font-family="-apple-system, PingFang SC, Microsoft YaHei, sans-serif"
+        font-size="18" fill="rgba(255,255,255,0.7)" letter-spacing="2">
+    立即开始游戏
+  </text>
+</svg>

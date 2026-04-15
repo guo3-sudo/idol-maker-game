@@ -788,18 +788,49 @@ progress::-moz-progress-bar { background: #2ed573; border-radius: 4px; }
     to   { opacity: 1; transform: translateY(0); }
 }
 
+.end-group-name {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: #ffeaa7;
+    margin-bottom: 12px;
+    text-shadow: 0 0 20px rgba(255, 234, 167, 0.4);
+}
+
 .end-emoji {
     font-size: 72px;
     line-height: 1;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+}
+
+.end-title-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
 }
 
 .end-title {
     font-size: clamp(22px, 5vw, 32px);
     font-weight: 900;
     color: #fff;
-    margin: 0 0 12px;
+    margin: 0;
     letter-spacing: 0.04em;
+}
+
+.end-badge {
+    display: inline-block;
+    background: rgba(255, 215, 0, 0.18);
+    border: 1px solid rgba(255, 215, 0, 0.45);
+    color: #ffd700;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
 }
 
 .end-message {
@@ -892,4 +923,58 @@ progress::-moz-progress-bar { background: #2ed573; border-radius: 4px; }
     .scale-cards {
         grid-template-columns: 1fr;
     }
+}
+
+/* ============================================================
+   START SCREEN EXTRAS
+   ============================================================ */
+
+/* Input hint text */
+.input-hint {
+    font-size: 12px;
+    color: #aaa;
+    margin: 6px 0 0;
+    line-height: 1.4;
+}
+
+/* Input label — make the group-name label larger/bolder */
+.start-form-container .form-group:first-child label {
+    font-size: 15px;
+    color: #2f3542;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.start-form-container .form-group:first-child input[type="text"] {
+    font-size: 18px;
+    padding: 16px 18px;
+    border-width: 2px;
+    font-weight: 600;
+}
+
+/* Developer credit */
+.dev-credit {
+    text-align: center;
+    font-size: 12px;
+    color: #ccc;
+    margin: 16px 0 0;
+    letter-spacing: 0.06em;
+    opacity: 0.6;
+}
+
+/* ============================================================
+   EVENT MODAL EXTRAS
+   ============================================================ */
+
+.modal-btn-text {
+    display: block;
+}
+
+.modal-btn-cost {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ff4757;
+    margin-top: 4px;
+    opacity: 0.85;
 }

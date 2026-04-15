@@ -83,9 +83,15 @@ export class GameEngine {
             }
         }
 
-        // 3. Fill to MAX_CARDS with remaining available
+        // 3. Fill to MAX_CARDS with remaining available, max 2 per category (soft limit)
         while (pool.length < MAX_CARDS && nonTriggerAvailable.length > 0) {
-            pool.push(nonTriggerAvailable.shift());
+            const idx = nonTriggerAvailable.findIndex(c => {
+                const cat = ACTIONS[c.key].category;
+                const catCount = pool.filter(p => !TRIGGER_KEYS.has(p.key) && ACTIONS[p.key].category === cat).length;
+                return catCount < 2;
+            });
+            if (idx === -1) break;
+            pool.push(nonTriggerAvailable.splice(idx, 1)[0]);
         }
 
         // 4. Fill remaining slots with preview items (max MAX_PREVIEW)
@@ -224,8 +230,19 @@ export class GameEngine {
             this._recentEventIds.push(randomEvent.id);
             if (this._recentEventIds.length > COOLDOWN) this._recentEventIds.shift();
 
-            this.ui.showEventModal(randomEvent, (selectedOption) => {
-                if (state.money < selectedOption.cost) {
+            // Scale option costs dynamically based on current fans
+            const scaleFactor = 1 + state.fans / 1000000;
+            const scaledEvent = {
+                ...randomEvent,
+                options: randomEvent.options.map(opt => ({
+                    ...opt,
+                    actualCost: opt.cost > 0 ? Math.round(opt.cost * scaleFactor) : 0
+                }))
+            };
+
+            this.ui.showEventModal(scaledEvent, (selectedOption) => {
+                const cost = selectedOption.actualCost !== undefined ? selectedOption.actualCost : selectedOption.cost;
+                if (state.money < cost) {
                     state.modifyResource('fans', -100000);
                     this.ui.showAlert(
                         '💸 资金不足',
@@ -233,7 +250,7 @@ export class GameEngine {
                         () => afterEvent()
                     );
                 } else {
-                    if (selectedOption.cost > 0) state.modifyResource('money', -selectedOption.cost);
+                    if (cost > 0) state.modifyResource('money', -cost);
                     const result = selectedOption.effect(state);
                     if (result && result.msg) {
                         this.ui.showAlert('📋 公关结果', result.msg, () => afterEvent());
@@ -258,33 +275,39 @@ export class GameEngine {
                 { label: '坚持了', value: `第 ${this.state.turn} 周` },
                 { label: '最终粉丝', value: Math.round(this.state.fans).toLocaleString() },
                 { label: '剩余资金', value: `¥${Math.round(this.state.money).toLocaleString()}` }
-            ]
+            ],
+            { groupName: this.state.groupName, badge: 'GAME OVER' }
         );
     }
 
     _triggerFinalEnding() {
         const { fans, bond, turn } = this.state;
-        let emoji, title, message;
+        let emoji, title, badge, message;
 
         if (fans < 50000) {
             emoji   = '😔';
-            title   = '【结局 D】无人问津的毕业';
+            title   = '无人问津的毕业';
+            badge   = '结局 D';
             message = '一年期满未能续约，成员们黯然退圈，转型素人……下次一定能行的。';
         } else if (fans < 500000) {
             emoji   = '🌟';
-            title   = '【结局 C】娱乐圈的生存之道';
+            title   = '娱乐圈的生存之道';
+            badge   = '结局 C';
             message = '成为娱乐圈的二线团体，靠接小商演和直播带货维持生计，也算一种成功。';
         } else if (fans < 2000000) {
             emoji   = '🔥';
-            title   = '【结局 B】当红炸子鸡';
+            title   = '当红炸子鸡';
+            badge   = '结局 B';
             message = '拿下年度最佳新人奖，举办全国巡演，成员们星途璀璨！';
         } else if (bond > 80) {
             emoji   = '👑';
-            title   = '【结局 A · 真结局】国民天团（传奇）';
+            title   = '国民天团（传奇）';
+            badge   = '结局 A · 真结局';
             message = '首年即火爆全国，举办大型演唱会，全员保持初心、关系融洽。你打造了一个娱乐圈永远无法复制的神话！';
         } else {
             emoji   = '💫';
-            title   = '【结局 B+】当红炸子鸡（貌合神离）';
+            title   = '当红炸子鸡（貌合神离）';
+            badge   = '结局 B+';
             message = '团体大红大紫，但背地里矛盾重重，团内关系已名存实亡……独缺那一份初心。';
         }
 
@@ -292,6 +315,6 @@ export class GameEngine {
             { label: '最终粉丝', value: Math.round(fans).toLocaleString() },
             { label: '团员默契', value: `${Math.round(bond)} / 100` },
             { label: '历时', value: `${turn - 1} 周` }
-        ]);
+        ], { groupName: this.state.groupName, badge });
     }
 }

@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>燃烧吧！制作人</title>
+    <meta property="og:title" content="燃烧吧！制作人">
+    <meta property="og:description" content="1 年，52 周，打造一个传奇偶像团体">
+    <meta property="og:image" content="https://animated-palmier-febff8.netlify.app/og-preview.svg">
+    <meta property="og:url" content="https://animated-palmier-febff8.netlify.app">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -19,8 +25,9 @@
             <div class="start-form-container">
                 <form id="start-form">
                     <div class="form-group">
-                        <label for="group-name-input">为你的偶像团体命名</label>
-                        <input type="text" id="group-name-input" placeholder="输入团名…（试试输入热门团体名）">
+                        <label for="group-name-input">✏️ 为你的偶像团体命名</label>
+                        <input type="text" id="group-name-input" placeholder="输入一个响亮的团名……">
+                        <p class="input-hint">一个好名字，是成功的第一步！</p>
                     </div>
                     <div class="form-group">
                         <label>选择公司规模</label>
@@ -80,6 +87,7 @@
                         </select>
                     </div>
                     <button type="submit" id="start-btn" class="btn-start">🎤 正式出道</button>
+                    <p class="dev-credit">by guo3-sudo</p>
                 </form>
             </div>
         </div>
@@ -174,8 +182,12 @@
         <!-- End Screen Overlay -->
         <div id="end-overlay" class="end-overlay" style="display:none;">
             <div class="end-box">
+                <div id="end-group-name" class="end-group-name"></div>
                 <div id="end-emoji" class="end-emoji"></div>
-                <h2 id="end-title" class="end-title"></h2>
+                <div class="end-title-wrap">
+                    <h2 id="end-title" class="end-title"></h2>
+                    <span id="end-badge" class="end-badge"></span>
+                </div>
                 <p id="end-message" class="end-message"></p>
                 <div id="end-stats" class="end-stats"></div>
                 <button id="restart-btn" class="btn-start">🔄 再来一局</button>
