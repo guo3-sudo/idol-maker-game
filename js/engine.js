@@ -1,9 +1,11 @@
 // js/engine.js
 import { ACTIONS } from './actions.js';
-import { MAX_TURN } from './config.js';
+import { MAX_TURN, COMPANY_SCALES } from './config.js';
 import { EVENT_POOL } from './events.js';
 
 const TRIGGER_KEYS = new Set(['team_vacation', 'emergency_gig', 'disbandment_crisis']);
+// Training keys whose only lock condition is skill cap — deprioritised in preview
+const CAPPED_TRAIN_KEYS = new Set(['train_vocal', 'train_dance', 'train_charm']);
 const SLOT_UNLOCK_FANS = 50000;
 
 export class GameEngine {
@@ -45,11 +47,13 @@ export class GameEngine {
             if (isUnlocked && cooldownLeft === 0 && !atMaxUses) {
                 available.push({ key, status: 'available', hintText: '' });
             } else if (!isUnlocked) {
-                preview.push({ key, status: 'locked', hintText: action.unlockHint });
+                // Tag skill-capped training cards so they get lowest preview priority
+                const isCapped = CAPPED_TRAIN_KEYS.has(key);
+                preview.push({ key, status: 'locked', hintText: action.unlockHint, _isCapped: isCapped });
             } else if (atMaxUses) {
-                preview.push({ key, status: 'maxed', hintText: '已达使用上限' });
+                preview.push({ key, status: 'maxed', hintText: '已达使用上限', _isCapped: false });
             } else {
-                preview.push({ key, status: 'cooldown', hintText: `${cooldownLeft} 周后可用` });
+                preview.push({ key, status: 'cooldown', hintText: `${cooldownLeft} 周后可用`, _isCapped: false });
             }
         }
 
@@ -95,10 +99,13 @@ export class GameEngine {
         }
 
         // 4. Fill remaining slots with preview items (max MAX_PREVIEW)
-        const previewShuffled = shuffle(preview.slice());
+        // De-prioritise skill-capped training cards — they only appear when no other preview cards exist
+        const previewNormal = shuffle(preview.filter(c => !c._isCapped));
+        const previewCapped = shuffle(preview.filter(c =>  c._isCapped));
+        const previewOrdered = [...previewNormal, ...previewCapped];
         let previewAdded = 0;
-        while (pool.length < MAX_CARDS && previewAdded < MAX_PREVIEW && previewShuffled.length > 0) {
-            pool.push(previewShuffled.shift());
+        while (pool.length < MAX_CARDS && previewAdded < MAX_PREVIEW && previewOrdered.length > 0) {
+            pool.push(previewOrdered.shift());
             previewAdded++;
         }
 
@@ -127,11 +134,47 @@ export class GameEngine {
             };
         }
 
+        // 2.5. Snapshot stress level and key attributes BEFORE actions run
+        //      stressAtStart drives the penalty multiplier so the decision to rest *this turn*
+        //      cannot retroactively reduce the penalty for training done in the same turn.
+        const stressAtStart = state.stress;
+        const preActionSnap = {
+            vocal: state.vocal, dance: state.dance, charm: state.charm, fans: state.fans
+        };
+
         // 3. Execute each selected action
         for (const actionKey of state.schedule) {
             const action = ACTIONS[actionKey];
             if (!action) continue;
             action.apply(state);
+        }
+
+        // 3.5. Apply stress penalty to training/performance gains
+        const stressMult = stressAtStart >= 80 ? 0.4
+                         : stressAtStart >= 60 ? 0.6
+                         : stressAtStart >= 40 ? 0.8
+                         : 1.0;
+        if (stressMult < 1.0) {
+            // Reduce training skill gains proportionally
+            for (const attr of ['vocal', 'dance', 'charm']) {
+                const delta = state[attr] - preActionSnap[attr];
+                if (delta > 0) {
+                    state[attr] = Math.min(100, preActionSnap[attr] + Math.round(delta * stressMult));
+                }
+            }
+            // Reduce fan gains from performances (only at severe stress ≥60)
+            if (stressAtStart >= 60) {
+                const fanMult = stressAtStart >= 80 ? 0.7 : 0.85;
+                const fanDelta = state.fans - preActionSnap.fans;
+                if (fanDelta > 0) {
+                    state.fans = Math.max(0, preActionSnap.fans + Math.round(fanDelta * fanMult));
+                }
+            }
+            // Show toast only when training was selected (makes penalty visible to player)
+            const hadTraining = state.schedule.some(k => ACTIONS[k]?.category === 'train');
+            if (hadTraining) {
+                this.ui.showToast(`😰 压力过高！本周训练效果仅 ${Math.round(stressMult * 100)}%`);
+            }
         }
 
         // 4. Update cooldowns and use counts for used actions
@@ -149,9 +192,13 @@ export class GameEngine {
             state.actionCooldowns[key] = Math.max(0, state.actionCooldowns[key] - 1);
         }
 
-        // 6. Apply passive stress from company scale
-        const passiveStress = state.stress * (state.stressRate - 1) * 0.1;
-        state.modifyResource('stress', passiveStress);
+        // 6. Apply weekly base stress (fixed per company scale, replaces old stressRate formula)
+        const weeklyStress = COMPANY_SCALES[state.companyScale]?.weeklyStress ?? 2;
+        state.modifyResource('stress', weeklyStress);
+
+        // 6b. Bond-linked additional stress: low team cohesion → more internal friction
+        if (state.bond < 40) state.modifyResource('stress', 1);
+        if (state.bond < 20) state.modifyResource('stress', 2);
 
         // 7. Stress overflow penalty
         if (state.stress >= 100) {

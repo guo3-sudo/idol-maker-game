@@ -17,7 +17,8 @@ export const ACTIONS = {
         name: '声乐训练', category: 'train', icon: '🎤',
         effectSummary: '唱功 +4，体力 -15，压力 +3',
         cooldown: 0, maxUses: Infinity, triggerType: null,
-        unlock: () => true, unlockHint: '',
+        unlock: (state) => state.vocal < 100,
+        unlockHint: '唱功已满级',
         apply(state) {
             state.modifyResource('money', -50000);
             state.modifyResource('stamina', -15);
@@ -30,7 +31,8 @@ export const ACTIONS = {
         name: '舞蹈训练', category: 'train', icon: '💃',
         effectSummary: '舞蹈 +4，体力 -15，压力 +3',
         cooldown: 0, maxUses: Infinity, triggerType: null,
-        unlock: () => true, unlockHint: '',
+        unlock: (state) => state.dance < 100,
+        unlockHint: '舞蹈已满级',
         apply(state) {
             state.modifyResource('money', -50000);
             state.modifyResource('stamina', -15);
@@ -43,7 +45,8 @@ export const ACTIONS = {
         name: '形象管理', category: 'train', icon: '✨',
         effectSummary: '魅力 +4，体力 -12，压力 +4',
         cooldown: 0, maxUses: Infinity, triggerType: null,
-        unlock: () => true, unlockHint: '',
+        unlock: (state) => state.charm < 100,
+        unlockHint: '魅力已满级',
         apply(state) {
             state.modifyResource('money', -50000);
             state.modifyResource('stamina', -12);
@@ -56,7 +59,7 @@ export const ACTIONS = {
     rest: {
         name: '宿舍休整', category: 'rest', icon: '🛋️',
         effectSummary: '体力 +30，压力 -20，默契 +2',
-        cooldown: 0, maxUses: Infinity, triggerType: null,
+        cooldown: 1, maxUses: Infinity, triggerType: null,
         unlock: () => true, unlockHint: '',
         apply(state) {
             state.modifyResource('stamina', 30);

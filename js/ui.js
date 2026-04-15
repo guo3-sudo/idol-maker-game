@@ -158,13 +158,17 @@ export class UI {
 
             const textSpan = document.createElement('span');
             textSpan.className = 'modal-btn-text';
-            textSpan.textContent = opt.text;
+            // When a scaled actual cost exists, strip the hardcoded （¥X万） annotation
+            // from the button text to avoid showing two conflicting numbers.
+            textSpan.textContent = opt.actualCost > 0
+                ? opt.text.replace(/（¥[^）]+）/, '').trim()
+                : opt.text;
             btn.appendChild(textSpan);
 
             if (opt.actualCost > 0) {
                 const costSpan = document.createElement('span');
                 costSpan.className = 'modal-btn-cost';
-                costSpan.textContent = `实际扣费 ¥${opt.actualCost.toLocaleString()}`;
+                costSpan.textContent = `💰 实际扣费 ¥${opt.actualCost.toLocaleString()}`;
                 btn.appendChild(costSpan);
             }
 
